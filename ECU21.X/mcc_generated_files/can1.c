@@ -48,6 +48,8 @@
 
 #include "can1.h"
 #include "dma.h"
+#include "pin_manager.h"
+#include "../interrupts.h"
 
 #define CAN1_TX_DMA_CHANNEL DMA_CHANNEL_0
 #define CAN1_RX_DMA_CHANNEL DMA_CHANNEL_2
@@ -626,7 +628,7 @@ void CAN1_SetBusWakeUpActivityInterruptHandler(void *handler)
 
 void __attribute__((weak)) CAN1_DefaultReceiveBufferHandler(void) 
 {
-    CAN1_CallbackMessageReceived();
+
 }
 
 void CAN1_SetRxBufferInterruptHandler(void *handler)

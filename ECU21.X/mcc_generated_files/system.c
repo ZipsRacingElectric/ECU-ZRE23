@@ -79,7 +79,7 @@
 #pragma config BOREN0 = ON    //Brown Out Reset Detection Bit->BOR is Enabled
 
 // FICD
-#pragma config ICS = PGD2    //ICD Communication Channel Select Bits->Communicate on PGEC2 and PGED2
+#pragma config ICS = PGD1    //ICD Communication Channel Select Bits->Communicate on PGEC1 and PGED1
 
 // FDMTINTVL
 #pragma config DMTIVTL = 0    //Lower 16 Bits of 32 Bit DMT Window Interval->0
@@ -108,16 +108,18 @@
 #include "clock.h"
 #include "system.h"
 #include "system_types.h"
+#include "can1.h"
+#include "dma.h"
+#include "adc1.h"
 #include "interrupt_manager.h"
 #include "traps.h"
-#include "dma.h"
-#include "can1.h"
 
 void SYSTEM_Initialize(void)
 {
     PIN_MANAGER_Initialize();
-    INTERRUPT_Initialize();
     CLOCK_Initialize();
+    INTERRUPT_Initialize();
+    ADC1_Initialize();
     CAN1_Initialize();
     DMA_Initialize();
     INTERRUPT_GlobalEnable();
