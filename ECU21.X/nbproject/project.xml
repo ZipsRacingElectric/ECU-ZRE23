@@ -6,9 +6,9 @@
             <name>ECU21</name>
             <creation-uuid>ef46a2b8-694b-4a0b-a6b0-7e5b4126f0ee</creation-uuid>
             <make-project-type>0</make-project-type>
-            <c-extensions/>
+            <c-extensions>c</c-extensions>
             <cpp-extensions/>
-            <header-extensions/>
+            <header-extensions>h</header-extensions>
             <asminc-extensions/>
             <sourceEncoding>ISO-8859-1</sourceEncoding>
             <make-dep-projects/>
