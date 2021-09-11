@@ -49,7 +49,6 @@
 #include "can1.h"
 #include "dma.h"
 #include "pin_manager.h"
-#include "../interrupts.h"
 
 #define CAN1_TX_DMA_CHANNEL DMA_CHANNEL_0
 #define CAN1_RX_DMA_CHANNEL DMA_CHANNEL_2
