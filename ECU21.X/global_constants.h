@@ -21,5 +21,25 @@
 #define LV_BATT_ID              0x541   //id of message broadcasting LV voltage
 #define LV_BATT_MSG_SIZE        2       //2 bytes of data
 
+//Button Constants
+typedef enum
+{
+	INITIAL = -1,
+    NOT_PUSHED = 0,
+    PUSHED = 1,
+}BTN_STATE;
+
+typedef enum
+{
+	ACCEL = 0,
+    AUTOCROSS = 1,
+    SKIDPAD = 2,
+    ENDURANCE = 3,
+    STAND = 4,
+    STATE = 5,
+    DEBUG = 6,
+    NAW = 7, //state for when selector switch is between positions (cause switch is break before make)
+}VEHICLE_MODES;
+
 #endif	/* GLOBAL_CONSTANTS_H */
 
