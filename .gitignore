@@ -1,5 +1,6 @@
-ECU21.X/build/
-ECU21.X/dist/
-ECU21.X/nbproject/private/
-ECU21.X/nbproject/Makefile-*
-ECU21.X/nbproject/Package-*
+**/build/
+**/dist/
+**/nbproject/private/
+**/nbproject/Makefile-*
+**/nbproject/Package-*
+**/.generated_files/
