@@ -28,5 +28,7 @@
 #define BRK2_BRAKING            110  // to turn brake light on
 #define BRK2_BRAKING_HARD       175  // value of brake input signal when "braking hard" for 25-5 rule
 
+#define MAX_ACAN_MSG_NOT_RECEIVED_COUNT 5   // how many messages are allowed to be missed before sending 0 torque request
+
 #endif	/* CONFIGURATION_VARIABLES_H */
 

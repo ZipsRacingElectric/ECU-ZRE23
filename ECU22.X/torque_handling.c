@@ -8,7 +8,6 @@
 static void check_apps_and_brakes_plausibility();
 static void check_25_5_plausibility();
 static void set_brake_light();
-static void send_torque_request();
 
 static const uint16_t APPS1_25_PERCENT = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 4 + APPS1_REAL_MIN;    // used for 25/5 plausibility check
 static const uint16_t APPS1_5_PERCENT = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 20 + APPS1_REAL_MIN;    // used for 25/5 plausibility check
@@ -24,15 +23,18 @@ static const uint16_t APPS2_MAX_RANGE = CALC_APPS2_FROM_APPS1(APPS1_MAX_RANGE); 
 static uint16_t APPS2_25_PERCENT;                                                       // used for 25/5 plausibility check
 static uint16_t APPS2_5_PERCENT;                                                        // used for 25/5 plausibility check
 
-static bool is_plausible = true;
-static bool is_25_5_plausible = true;
-static bool is_100_ms_plausible = true;
+static volatile bool is_plausible = true;
+static volatile bool is_25_5_plausible = true;
+static volatile bool is_100_ms_plausible = true;
 
-static uint16_t apps_1;
-static uint16_t raw_apps_2;
-static uint16_t scaled_apps_2;
-static uint16_t brake_1;
-static uint16_t brake_2;
+static volatile bool message_received = false;
+static uint8_t message_not_received_count = 0;
+
+static volatile uint16_t apps_1;
+static volatile uint16_t raw_apps_2;
+static volatile uint16_t scaled_apps_2;
+static volatile uint16_t brake_1;
+static volatile uint16_t brake_2;
 
 void initialize_apps_2()
 {
@@ -50,10 +52,11 @@ void handle_acan_message(uint8_t* message_data)
     brake_1 = (message_data[5] << 8) | message_data[4];
     brake_2 = (message_data[7] << 8) | message_data[6];
     
+    message_received = true;
+    
     set_brake_light();
     check_apps_and_brakes_plausibility();
     check_25_5_plausibility();
-    send_torque_request();
 }
 
 void check_apps_and_brakes_plausibility()
@@ -121,11 +124,24 @@ void set_brake_light()
     }
 }
 
+// called every 20 ms by timer 2
 void send_torque_request()
 {
-    if (is_25_5_plausible && is_100_ms_plausible) // add drive mode check to this!!
+    // check if a new message has been received since last torque_request call
+    if (!message_received)
+    {
+        ++message_not_received_count;
+    }
+    else
+    {
+        message_not_received_count = 0;
+        message_received = !message_received;
+    }
+    
+    if (message_not_received_count <= 5 && is_25_5_plausible && is_100_ms_plausible) // add drive mode check to this!!
     {
         // send request
+        
     }
     else
     {

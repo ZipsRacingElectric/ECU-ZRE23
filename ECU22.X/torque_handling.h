@@ -17,6 +17,7 @@ extern "C" {
 void initialize_apps_2();
 void handle_acan_message(uint8_t* message_data);
 void trigger_100_ms_implausibility();
+void send_torque_request();
 
 
 #ifdef	__cplusplus

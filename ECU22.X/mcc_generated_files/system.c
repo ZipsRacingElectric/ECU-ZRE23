@@ -113,6 +113,7 @@
 #include "interrupt_manager.h"
 #include "traps.h"
 #include "tmr1.h"
+#include "tmr2.h"
 
 void SYSTEM_Initialize(void)
 {
@@ -120,6 +121,7 @@ void SYSTEM_Initialize(void)
     INTERRUPT_Initialize();
     CLOCK_Initialize();
     CAN1_Initialize();
+    TMR2_Initialize();
     DMA_Initialize();
     TMR1_Initialize();
     INTERRUPT_GlobalEnable();
