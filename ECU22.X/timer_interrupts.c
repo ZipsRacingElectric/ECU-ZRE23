@@ -8,6 +8,6 @@ void initialize_timers()
     TMR1_Stop();
     TMR2_Start();
 
-    TMR1_SetInterruptHandler(trigger_100_ms_implausibility);
+    TMR1_SetInterruptHandler(trigger_100_ms_implausibility);    // control + click on the function parameters to go to the function definitions :)
     TMR2_SetInterruptHandler(send_torque_request);
 }

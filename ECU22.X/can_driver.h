@@ -12,8 +12,10 @@
 extern "C" {
 #endif
 
-void CAN_Initialize(void);
+#include "mcc_generated_files/can_types.h"
 
+void CAN_Initialize(void);
+void CAN_Msg_Send(uint16_t id, CAN_DLC dlc, uint8_t *tx_data);
 
 #ifdef	__cplusplus
 }

@@ -8,8 +8,9 @@
 #ifndef CONFIGURATION_VARIABLES_H
 #define	CONFIGURATION_VARIABLES_H
 
-#define APPS2_OFFSET            99      //temporary value
-#define APPS2_SCALING_FACTOR    2       //temporary value
+//TODO: Calibrate the values in this file
+#define APPS2_OFFSET            99      
+#define APPS2_SCALING_FACTOR    2       
 
 #define APPS1_MIN_RANGE			50		//slightly beyond pedal travel, lowest plausible accelerator position, anything lower indicates an error
 #define APPS1_REAL_MIN			80		//end of pedal travel, this is actually what is the pedal reading when it is not pressed
