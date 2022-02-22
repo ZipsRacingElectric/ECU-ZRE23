@@ -8,6 +8,8 @@
 #ifndef CONFIGURATION_VARIABLES_H
 #define	CONFIGURATION_VARIABLES_H
 
+#define TORQUE_MAX               230        // maximum torque allowed to be requested in newton-meters
+
 #define TORQUE_PERCENT_DEBUG     5
 #define TORQUE_PERCENT_DAN       10
 #define TORQUE_PERCENT_SKIDPAD   20
