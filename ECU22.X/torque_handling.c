@@ -9,6 +9,8 @@ static void check_apps_and_brakes_plausibility();
 static void check_25_5_plausibility();
 static void set_brake_light();
 
+static uint16_t scaled_torque_limit = 0;    // stores the maximum torque for the current drive mode
+
 static const uint16_t APPS1_25_PERCENT = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 4 + APPS1_REAL_MIN;    // used for 25/5 plausibility check
 static const uint16_t APPS1_5_PERCENT = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 20 + APPS1_REAL_MIN;    // used for 25/5 plausibility check
 
@@ -156,4 +158,10 @@ void trigger_100_ms_implausibility()
     
     LED3_SetLow();
     LED2_SetHigh();
+}
+
+// sets the max torque request to a percentage of the overall max torque
+void set_torque_limit(uint8_t torque_percent)
+{
+    scaled_torque_limit = TORQUE_MAX * torque_percent / 100;
 }

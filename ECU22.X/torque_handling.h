@@ -19,6 +19,8 @@ void handle_acan_message(uint8_t* message_data);
 void trigger_100_ms_implausibility();
 void send_torque_request();
 
+// sets the max torque request to a percentage of the overall max torque
+void set_torque_limit(uint8_t torque_percent);
 
 #ifdef	__cplusplus
 }
