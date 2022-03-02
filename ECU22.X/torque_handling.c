@@ -4,10 +4,13 @@
 #include "torque_handling.h"
 #include "configuration_variables.h"
 #include "mcc_generated_files/tmr1.h"
+#include "car_data.h"
 
 static void check_apps_and_brakes_plausibility();
 static void check_25_5_plausibility();
 static void set_brake_light();
+
+extern struct Car_Data car_data;
 
 static uint16_t scaled_torque_limit = 0;    // stores the maximum torque for the current drive mode
 
@@ -16,14 +19,14 @@ static const uint16_t APPS1_5_PERCENT = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 20 +
 
 static const uint16_t APPS_10PERCENT_PLAUSIBILITY = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 10;
 
-static const uint16_t APPS2_MIN_RANGE = CALC_APPS2_FROM_APPS1(APPS1_MIN_RANGE);         // lowest plausible accelerator position, anything lower indicates an error
-static const uint16_t APPS2_REAL_MIN = CALC_APPS2_FROM_APPS1(APPS1_REAL_MIN);           // this is actually what the pedal reading is when it is not pressed
-static const uint16_t APPS2_ACCEL_START = CALC_APPS2_FROM_APPS1(APPS1_ACCEL_START);     // this is where the ECU begins to request torque
-static const uint16_t APPS2_WOT = CALC_APPS2_FROM_APPS1(APPS1_WOT);                     // point for wide open throttle
-static const uint16_t APPS2_REAL_MAX = CALC_APPS2_FROM_APPS1(APPS1_REAL_MAX);           // this is actually what is the pedal reading when it is fully pressed
-static const uint16_t APPS2_MAX_RANGE = CALC_APPS2_FROM_APPS1(APPS1_MAX_RANGE);         // highest plausible accelerator position, anything higher indicates an error
-static uint16_t APPS2_25_PERCENT;                                                       // used for 25/5 plausibility check
-static uint16_t APPS2_5_PERCENT;                                                        // used for 25/5 plausibility check
+static const uint16_t RAW_APPS2_MIN_RANGE = CALC_APPS2_FROM_APPS1(APPS1_MIN_RANGE);         // lowest plausible accelerator position, anything lower indicates an error
+static const uint16_t RAW_APPS2_REAL_MIN = CALC_APPS2_FROM_APPS1(APPS1_REAL_MIN);           // this is actually what the pedal reading is when it is not pressed
+static const uint16_t RAW_APPS2_ACCEL_START = CALC_APPS2_FROM_APPS1(APPS1_ACCEL_START);     // this is where the ECU begins to request torque
+static const uint16_t RAW_APPS2_WOT = CALC_APPS2_FROM_APPS1(APPS1_WOT);                     // point for wide open throttle
+static const uint16_t RAW_APPS2_REAL_MAX = CALC_APPS2_FROM_APPS1(APPS1_REAL_MAX);           // this is actually what is the pedal reading when it is fully pressed
+static const uint16_t RAW_APPS2_MAX_RANGE = CALC_APPS2_FROM_APPS1(APPS1_MAX_RANGE);         // highest plausible accelerator position, anything higher indicates an error
+static uint16_t RAW_APPS2_25_PERCENT;                                                       // used for 25/5 plausibility check
+static uint16_t RAW_APPS2_5_PERCENT;                                                        // used for 25/5 plausibility check
 
 static volatile bool is_plausible = true;
 static volatile bool is_25_5_plausible = true;
@@ -40,8 +43,8 @@ static volatile uint16_t brake_2;
 
 void initialize_apps_2()
 {
-    APPS2_25_PERCENT = (APPS2_REAL_MAX - APPS2_REAL_MIN) / 4 + APPS2_REAL_MIN;
-    APPS2_5_PERCENT = (APPS2_REAL_MAX - APPS2_REAL_MIN) / 20 + APPS2_REAL_MIN;
+    RAW_APPS2_25_PERCENT = (RAW_APPS2_REAL_MAX - RAW_APPS2_REAL_MIN) / 4 + RAW_APPS2_REAL_MIN;
+    RAW_APPS2_5_PERCENT = (RAW_APPS2_REAL_MAX - RAW_APPS2_REAL_MIN) / 20 + RAW_APPS2_REAL_MIN;
 }
 
 void handle_acan_message(uint8_t* message_data)
@@ -56,6 +59,15 @@ void handle_acan_message(uint8_t* message_data)
     
     message_received = true;
     
+    if (apps_1 > APPS1_ACCEL_START || raw_apps_2 > RAW_APPS2_ACCEL_START)
+    {
+        car_data.accelerator_is_pressed = true;
+    }
+    else
+    {
+        car_data.accelerator_is_pressed = false;
+    }
+    
     set_brake_light();
     check_apps_and_brakes_plausibility();
     check_25_5_plausibility();
@@ -66,7 +78,7 @@ void check_apps_and_brakes_plausibility()
     // the below statement should be true when implausible.
     if (apps_1 < (scaled_apps_2 - APPS_10PERCENT_PLAUSIBILITY) || apps_1 > (scaled_apps_2 + APPS_10PERCENT_PLAUSIBILITY) // check for 10% Implausibility
         || apps_1 < APPS1_MIN_RANGE || apps_1 > APPS1_MAX_RANGE             // check for APPS1 out of range
-        || raw_apps_2 < APPS2_MIN_RANGE || raw_apps_2 > APPS2_MAX_RANGE     // check for APPS2 out of range
+        || raw_apps_2 < RAW_APPS2_MIN_RANGE || raw_apps_2 > RAW_APPS2_MAX_RANGE     // check for APPS2 out of range
         || brake_1 < BRK1_MIN_RANGE || brake_1 > BRK1_MAX_RANGE             // check for brake_1 out of range
         || brake_2 < BRK2_MIN_RANGE || brake_2 > BRK2_MAX_RANGE)            // check for brake_2 out of range
     {
@@ -92,22 +104,22 @@ void check_apps_and_brakes_plausibility()
 // 25-5 rule check. cut power if accelerator is past 25% and braking hard
 void check_25_5_plausibility()
 {
-    if((brake_1 > BRK1_BRAKING_HARD || brake_2 > BRK2_BRAKING_HARD) && (apps_1 > APPS1_25_PERCENT || raw_apps_2 > APPS2_25_PERCENT))
+    if((brake_1 > BRK1_BRAKING_HARD || brake_2 > BRK2_BRAKING_HARD) && (apps_1 > APPS1_25_PERCENT || raw_apps_2 > RAW_APPS2_25_PERCENT))
     {
         is_25_5_plausible = false;
         
-        // add CAN message to send this fault to dash
+        // TODO:add CAN message to send this fault to dash
         
         LED3_SetLow();
         LED2_SetHigh();
     }
     
     // allow torque requests when APPSs go below 5% throttle
-    if(apps_1 < APPS1_5_PERCENT && raw_apps_2 < APPS2_5_PERCENT)
+    if(apps_1 < APPS1_5_PERCENT && raw_apps_2 < RAW_APPS2_5_PERCENT)
     {
         is_25_5_plausible = true;
         
-        // add CAN message to send fault clear to dash
+        //TODO: add CAN message to send fault clear to dash
         
         LED3_SetHigh();
         LED2_SetLow();
@@ -118,10 +130,12 @@ void set_brake_light()
 {
     if (brake_1 > BRK1_BRAKING || brake_2 > BRK2_BRAKING)
     {
+        car_data.is_braking = true;
         BRK_CTRL_SetHigh();
     }
     else
     {
+        car_data.is_braking = false;
         BRK_CTRL_SetLow();
     }
 }
@@ -147,7 +161,7 @@ void send_torque_request()
     }
     else
     {
-        // send 0 torque request
+        //TODO: send 0 torque request
     }
 }
 

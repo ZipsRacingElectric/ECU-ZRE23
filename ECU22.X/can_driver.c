@@ -3,8 +3,8 @@
 #include "mcc_generated_files/can_types.h"
 #include "mcc_generated_files/pin_manager.h"
 #include "global_constants.h"
-#include "driver_interfacing.h"
 #include "torque_handling.h"
+#include "state_manager.h"
 #include "can_driver.h"
 
 static void CAN_Handle_Message_Rx(void);

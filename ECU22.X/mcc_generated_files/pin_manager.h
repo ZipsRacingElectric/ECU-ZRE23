@@ -1841,6 +1841,64 @@
 */
 void PIN_MANAGER_Initialize (void);
 
+/**
+  @Summary
+    Callback for IOC Pins.
 
+  @Description
+    This routine is callback for IOC Pins.
+
+  @Param
+    None.
+
+  @Returns
+    None
+ 
+  @Example 
+    <code>
+        CN_SetInterruptHandler(&CN_CallBack);
+    </code>
+*/
+void CN_CallBack(void);
+
+/**
+  @Summary
+    Assigns a function pointer with a callback address.
+
+  @Description
+    This routine assigns a function pointer with a callback address.
+
+  @Param
+    Address of the callback routine.
+
+  @Returns
+    None
+ 
+  @Example 
+    <code>
+        CN_SetInterruptHandler(&CN_CallBack);
+    </code>
+*/
+void CN_SetInterruptHandler(void (* InterruptHandler)(void));
+
+/**
+  @Summary
+    Assigns a function pointer with a callback address.
+
+  @Description
+    This routine assigns a function pointer with a callback address.
+
+  @Param
+    Address of the callback routine.
+
+  @Returns
+    None
+ 
+  @Example 
+    <code>
+        CN_SetIOCInterruptHandler(&CN_CallBack);
+    </code>
+*/
+void __attribute__((deprecated("\nThis will be removed in future MCC releases. \nUse CN_SetInterruptHandler instead."))) CN_SetIOCInterruptHandler(void *handler);
 
 #endif
