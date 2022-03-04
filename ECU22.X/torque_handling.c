@@ -8,7 +8,8 @@
 
 static void check_apps_and_brakes_plausibility();
 static void check_25_5_plausibility();
-static void set_brake_light();
+static void set_brake_state();
+static void set_accelerator_state();
 
 extern struct Car_Data car_data;
 
@@ -47,28 +48,20 @@ void initialize_apps_2()
     RAW_APPS2_5_PERCENT = (RAW_APPS2_REAL_MAX - RAW_APPS2_REAL_MIN) / 20 + RAW_APPS2_REAL_MIN;
 }
 
-void handle_acan_message(uint8_t* message_data)
+void set_pedal_position_data(uint16_t new_apps_1, uint16_t new_raw_apps_2, uint16_t new_brake_1, uint16_t new_brake_2)
 {
-    apps_1 = (message_data[1] << 8) | message_data[0];
-    
-    raw_apps_2 = (message_data[3] << 8) | message_data[2];
-    scaled_apps_2 = CALC_SCALED_APPS2(raw_apps_2);
-    
-    brake_1 = (message_data[5] << 8) | message_data[4];
-    brake_2 = (message_data[7] << 8) | message_data[6];
-    
     message_received = true;
     
-    if (apps_1 > APPS1_ACCEL_START || raw_apps_2 > RAW_APPS2_ACCEL_START)
-    {
-        car_data.accelerator_is_pressed = true;
-    }
-    else
-    {
-        car_data.accelerator_is_pressed = false;
-    }
+    apps_1 = new_apps_1;
     
-    set_brake_light();
+    raw_apps_2 = new_raw_apps_2;
+    scaled_apps_2 = CALC_SCALED_APPS2(new_raw_apps_2);
+
+    brake_1 = new_brake_1;
+    brake_2 = new_brake_2;
+    
+    set_brake_state();
+    set_accelerator_state();
     check_apps_and_brakes_plausibility();
     check_25_5_plausibility();
 }
@@ -126,7 +119,7 @@ void check_25_5_plausibility()
     }
 }
 
-void set_brake_light()
+void set_brake_state()
 {
     if (brake_1 > BRK1_BRAKING || brake_2 > BRK2_BRAKING)
     {
@@ -137,6 +130,18 @@ void set_brake_light()
     {
         car_data.is_braking = false;
         BRK_CTRL_SetLow();
+    }
+}
+
+void set_accelerator_state()
+{
+    if (apps_1 > APPS1_ACCEL_START || raw_apps_2 > RAW_APPS2_ACCEL_START)
+    {
+        car_data.accelerator_is_pressed = true;
+    }
+    else
+    {
+        car_data.accelerator_is_pressed = false;
     }
 }
 

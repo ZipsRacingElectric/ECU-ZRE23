@@ -5,7 +5,7 @@
 
 static int prev_hv_on = -1;
 
-void on_change()
+static void on_change()
 {
     // if hv_on changed from true to false, start timer that will kick car out of drive mode
     if (prev_hv_on == 1 && !HV_ON_GetValue())

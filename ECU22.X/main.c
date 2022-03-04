@@ -7,6 +7,7 @@
 #include "timer_interrupts.h"
 #include "can_driver.h"
 #include "torque_handling.h"
+#include "on_change_interrupts.h"
 #include <libpic30.h>        // __delayXXX() functions
 
 int main(void)

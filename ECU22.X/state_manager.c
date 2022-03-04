@@ -8,13 +8,13 @@
 
 extern struct Car_Data car_data;
 
-// dash message handler variables
-static bool is_start_pressed = false;
-static bool is_reset_pressed = false;
-static VEHICLE_MODES dash_mode = NAW;
-
 void update_vehicle_mode(VEHICLE_MODES dash_mode)
 {
+    if(dash_mode == car_data.mode)
+    {
+        return;
+    }
+           
     switch (dash_mode)
     {
         case DEBUG:
@@ -50,6 +50,8 @@ void update_vehicle_mode(VEHICLE_MODES dash_mode)
             // don't change torque limit if an invalid mode was sent
             break;
     }
+    
+    car_data.mode = dash_mode;
 }
 
 void set_ready_to_drive()
@@ -60,24 +62,6 @@ void set_ready_to_drive()
         start_RTD_buzzer();
         car_data.ready_to_drive = true;
         LED4_SetHigh();
-    }
-}
-
-void handle_dash_msg(uint8_t* message_data) 
-{
-    is_start_pressed = message_data[0] & 0x1;           // get bit 0 of frame 0
-    is_reset_pressed = (message_data[0] >> 1) & 0x1;    // get bit 1 of frame 0
-    dash_mode = (message_data[0] >> 4) & 0x7;           // get bits 4, 5, and 6 of frame 0
-
-    if (dash_mode != car_data.mode)
-    {
-        update_vehicle_mode(dash_mode);
-        car_data.mode = dash_mode;
-    }
-    
-    if (is_start_pressed)
-    {
-        set_ready_to_drive();
     }
 }
 

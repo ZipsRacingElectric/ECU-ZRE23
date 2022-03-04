@@ -18,7 +18,6 @@ extern "C" {
 void update_vehicle_mode(VEHICLE_MODES dash_mode);
 void set_ready_to_drive();
 void exit_ready_to_drive();
-void handle_dash_msg(uint8_t* message_data);
 
 #ifdef	__cplusplus
 }
