@@ -52,9 +52,18 @@
 */
 void INTERRUPT_Initialize (void)
 {
+    //    CNI: Change Notification Interrupt
+    //    Priority: 1
+        IPC4bits.CNIP = 1;
     //    CI: ECAN1 Event
     //    Priority: 1
         IPC8bits.C1IP = 1;
+    //    TI: Timer 4
+    //    Priority: 1
+        IPC6bits.T4IP = 1;
+    //    TI: Timer 3
+    //    Priority: 1
+        IPC2bits.T3IP = 1;
     //    TI: Timer 2
     //    Priority: 1
         IPC1bits.T2IP = 1;

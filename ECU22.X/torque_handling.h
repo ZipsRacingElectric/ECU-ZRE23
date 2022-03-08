@@ -15,7 +15,7 @@ extern "C" {
 #include <stdint.h>
     
 void initialize_apps_2();
-void handle_acan_message(uint8_t* message_data);
+void set_pedal_position_data(uint16_t new_apps_1, uint16_t new_raw_apps_2, uint16_t new_brake_1, uint16_t new_brake_2);
 void trigger_100_ms_implausibility();
 void send_torque_request();
 
