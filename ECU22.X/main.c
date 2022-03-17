@@ -20,6 +20,7 @@ int main(void)
     initialize_timers();
     initialize_car_data();
     initialize_change_notification_interrupts();
+    initialize_inverter_cmd_data();
     HV_CTRL_SetHigh(); // allow high voltage to be used
  
     while (1)

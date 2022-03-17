@@ -14,10 +14,12 @@ extern "C" {
     
 #include <stdint.h>
     
+//TODO: comment all methods
 void initialize_apps_2();
 void set_pedal_position_data(uint16_t new_apps_1, uint16_t new_raw_apps_2, uint16_t new_brake_1, uint16_t new_brake_2);
 void trigger_100_ms_implausibility();
 void send_torque_request();
+void initialize_inverter_cmd_data();
 
 // sets the max torque request to a percentage of the overall max torque
 void set_torque_limit(uint8_t torque_percent);
