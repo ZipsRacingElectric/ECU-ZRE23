@@ -10,6 +10,7 @@ static void check_apps_and_brakes_plausibility();
 static void check_25_5_plausibility();
 static void set_brake_state();
 static void set_accelerator_state();
+static void calculate_torque_request();
 
 extern struct Car_Data car_data;
 
@@ -23,7 +24,7 @@ static const uint16_t APPS_10PERCENT_PLAUSIBILITY = (APPS1_REAL_MAX - APPS1_REAL
 static const uint16_t RAW_APPS2_MIN_RANGE = CALC_APPS2_FROM_APPS1(APPS1_MIN_RANGE);         // lowest plausible accelerator position, anything lower indicates an error
 static const uint16_t RAW_APPS2_REAL_MIN = CALC_APPS2_FROM_APPS1(APPS1_REAL_MIN);           // this is actually what the pedal reading is when it is not pressed
 static const uint16_t RAW_APPS2_ACCEL_START = CALC_APPS2_FROM_APPS1(APPS1_ACCEL_START);     // this is where the ECU begins to request torque
-static const uint16_t RAW_APPS2_WOT = CALC_APPS2_FROM_APPS1(APPS1_WOT);                     // point for wide open throttle
+static const uint16_t RAW_APPS2_WIDE_OPEN_THROTTLE = CALC_APPS2_FROM_APPS1(APPS1_WIDE_OPEN_THROTTLE);  // point for wide open throttle
 static const uint16_t RAW_APPS2_REAL_MAX = CALC_APPS2_FROM_APPS1(APPS1_REAL_MAX);           // this is actually what is the pedal reading when it is fully pressed
 static const uint16_t RAW_APPS2_MAX_RANGE = CALC_APPS2_FROM_APPS1(APPS1_MAX_RANGE);         // highest plausible accelerator position, anything higher indicates an error
 static uint16_t RAW_APPS2_25_PERCENT;                                                       // used for 25/5 plausibility check
@@ -42,10 +43,26 @@ static volatile uint16_t scaled_apps_2;
 static volatile uint16_t brake_1;
 static volatile uint16_t brake_2;
 
+static volatile uint8_t inverter_cmd_data[8];
+
+static volatile int16_t torque_times_ten;
+
 void initialize_apps_2()
 {
     RAW_APPS2_25_PERCENT = (RAW_APPS2_REAL_MAX - RAW_APPS2_REAL_MIN) / 4 + RAW_APPS2_REAL_MIN;
     RAW_APPS2_5_PERCENT = (RAW_APPS2_REAL_MAX - RAW_APPS2_REAL_MIN) / 20 + RAW_APPS2_REAL_MIN;
+}
+
+void initialize_inverter_cmd_data()
+{
+    inverter_cmd_data[0] = 0;   // low order torque request byte
+    inverter_cmd_data[1] = 0;   // high order torque request byte
+    inverter_cmd_data[2] = 0;   // low order speed request byte (unused)
+    inverter_cmd_data[3] = 0;   // high order speed request byte (unused)
+    inverter_cmd_data[4] = 1;   // Boolean direction bit. 1 = forward, 0 = reverse
+    inverter_cmd_data[5] = 0;   // 5.0: inverter enable, 0 for off. 5.1: discharge by sending current through motor (not used), 0 for disable. 5.2: 0 for torque mode
+    inverter_cmd_data[6] = (TORQUE_MAX * 10) & 0xFF;            // low order torque limit byte
+    inverter_cmd_data[7] = ((TORQUE_MAX * 10) >> 8) & 0xFF;     // high order torque limit byte
 }
 
 void set_pedal_position_data(uint16_t new_apps_1, uint16_t new_raw_apps_2, uint16_t new_brake_1, uint16_t new_brake_2)
@@ -145,9 +162,10 @@ void set_accelerator_state()
     }
 }
 
-// called every 20 ms by timer 2
+// inverter heartbeat message. called every 20 ms by timer 2
 void send_torque_request()
 {
+    // check if our data is stale (no new message from the ACAN board)
     // check if a new message has been received since last torque_request call
     if (!message_received)
     {
@@ -159,15 +177,23 @@ void send_torque_request()
         message_received = !message_received;
     }
     
-    if (message_not_received_count <= 5 && is_25_5_plausible && is_100_ms_plausible) // add drive mode check to this!!
+    // good to send torque request
+    if (message_not_received_count <= 5 && is_25_5_plausible && is_100_ms_plausible && car_data.ready_to_drive)
     {
-        // send request
-        
+        calculate_torque_request();
+        inverter_cmd_data[0] = torque_times_ten & 0xFF;         // low order torque request byte
+        inverter_cmd_data[1] = (torque_times_ten >> 8) & 0xFF;  // high order torque request byte
+        inverter_cmd_data[5] = 0x01;                            // inverter enabled, torque mode, discharge disabled
     }
     else
     {
-        //TODO: send 0 torque request
+        // not good to go; send 0 torque request
+        inverter_cmd_data[0] = 0;   // low order torque request byte
+        inverter_cmd_data[1] = 0;   // high order torque request byte
+        inverter_cmd_data[5] = 0;   // inverter disabled, torque mode, discharge disabled
     }
+    
+    CAN_Msg_Send(INV_HEARTBEAT_ID, INV_HEARTBEAT_MSG_SIZE, inverter_cmd_data);
 }
 
 void trigger_100_ms_implausibility()
@@ -183,4 +209,22 @@ void trigger_100_ms_implausibility()
 void set_torque_limit(uint8_t torque_percent)
 {
     scaled_torque_limit = TORQUE_MAX * torque_percent / 100;
+}
+
+void calculate_torque_request()
+{
+    //TODO: regen logic
+    if (apps_1 < APPS1_ACCEL_START)
+    {
+        torque_times_ten = 0;
+        return;
+    }
+    
+    if (apps_1 > APPS1_WIDE_OPEN_THROTTLE)
+    {
+        torque_times_ten = scaled_torque_limit;
+        return;
+    }
+    
+    torque_times_ten = scaled_torque_limit * ((apps_1 - APPS1_ACCEL_START) / (APPS1_WIDE_OPEN_THROTTLE - APPS1_ACCEL_START)) * 10;
 }
