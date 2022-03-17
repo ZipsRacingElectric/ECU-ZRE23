@@ -222,7 +222,7 @@ void calculate_torque_request()
     
     if (apps_1 > APPS1_WIDE_OPEN_THROTTLE)
     {
-        torque_times_ten = scaled_torque_limit;
+        torque_times_ten = scaled_torque_limit * 10;
         return;
     }
     
