@@ -12,20 +12,24 @@
 #include "macros.h"
 #include <stdint.h>
 
-#define FCY 40000000UL          // Instruction cycle frequency, Hz - required for __delayXXX() to work
+#define FCY 40000000UL          // instruction cycle frequency, Hz - required for __delayXXX() to work
 
 //CAN Constants
 #define ACAN_MSG_ID             0x05
 #define DASH_MSG_ID             0xFF
 
-#define IMD_MEAS_ID             0x651   //id of message broadcasting IMD measured resistance
-#define IMD_MEAS_MSG_SIZE       2       //2 bytes of data
-
-#define LED_ST_ID               0x321   //id of message from ECU to dash containing LED states
-#define LED_ST_MSG_SIZE         2       //LED message to dash is 2 bytes
-
-#define LV_BATT_ID              0x541   //id of message broadcasting LV voltage
-#define LV_BATT_MSG_SIZE        2       //2 bytes of data
+#define IMD_MEAS_ID             0x651               // id of message broadcasting IMD measured resistance
+#define IMD_MEAS_MSG_SIZE       2                   // 2 bytes of data
+ 
+#define LED_ST_ID               0x321               // id of message from ECU to dash containing LED states
+#define LED_ST_MSG_SIZE         2                   // LED message to dash is 2 bytes
+ 
+#define LV_BATT_ID              0x541               // id of message broadcasting LV voltage
+#define LV_BATT_MSG_SIZE        2                   // 2 bytes of data
+ 
+#define INVOFFSET               0xA0 - 0xA0         // offset for inverter ids for CAN messages, actual offset - default offset
+#define INV_HEARTBEAT_ID        0x0C0 + INVOFFSET   // id of inverter heartbeat message
+#define INV_HEARTBEAT_MSG_SIZE  8                   // inv heartbeat message is 8 bytes
 
 typedef enum
 {
@@ -36,7 +40,7 @@ typedef enum
     AUTOCROSS = 4,
 	ACCEL = 5,
     BEANS = 6,
-    NAW = 7 //state for when selector switch is between positions (cause switch is break before make)
+    NAW = 7         // state for when selector switch is between positions (cause switch is break before make)
 } VEHICLE_MODES;
 
 #endif	/* GLOBAL_CONSTANTS_H */
