@@ -14,7 +14,7 @@ static void calculate_torque_request();
 
 extern struct Car_Data car_data;
 
-static uint16_t scaled_torque_limit = 0;    // stores the maximum torque for the current drive mode
+static double scaled_torque_limit = 0;    // stores the maximum torque for the current drive mode
 
 static const uint16_t APPS1_25_PERCENT = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 4 + APPS1_REAL_MIN;    // used for 25/5 plausibility check
 static const uint16_t APPS1_5_PERCENT = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 20 + APPS1_REAL_MIN;    // used for 25/5 plausibility check
@@ -226,5 +226,5 @@ void calculate_torque_request()
         return;
     }
     
-    torque_times_ten = scaled_torque_limit * ((apps_1 - APPS1_ACCEL_START) / (APPS1_WIDE_OPEN_THROTTLE - APPS1_ACCEL_START)) * 10;
+    torque_times_ten = scaled_torque_limit * (((double)apps_1 - APPS1_ACCEL_START) / (APPS1_WIDE_OPEN_THROTTLE - APPS1_ACCEL_START)) * 10.0;
 }
