@@ -193,7 +193,7 @@ void send_torque_request()
         inverter_cmd_data[5] = 0;   // inverter disabled, torque mode, discharge disabled
     }
     
-    CAN_Msg_Send(INV_HEARTBEAT_ID, INV_HEARTBEAT_MSG_SIZE, inverter_cmd_data);
+    CAN_Msg_Send(CAN_ID_INVERTER_HEARTBEAT, CAN_DLC_INVERTER_HEARTBEAT, inverter_cmd_data);
 }
 
 void trigger_100_ms_implausibility()

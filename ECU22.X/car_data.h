@@ -20,6 +20,7 @@ struct Car_Data
     bool ready_to_drive;
     bool is_braking;
     bool accelerator_is_pressed;
+    bool inverter_fault_present;
     volatile VEHICLE_MODES mode;
 };
 
