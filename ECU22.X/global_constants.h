@@ -30,7 +30,7 @@
 #define INVOFFSET                   0xA0 - 0xA0         // offset for inverter ids for CAN messages, actual offset - default offset
 #define CAN_ID_INVERTER_HEARTBEAT   0x0C0 + INVOFFSET   // id of inverter heartbeat message
 #define CAN_DLC_INVERTER_HEARTBEAT  8                   // inv heartbeat message is 8 bytes
-#define CAN_ID_INVERTER_FAULT       0xAB                // id of inverter fault broadcast message
+#define CAN_ID_INVERTER_FAULT       0xAB  + INVOFFSET   // id of inverter fault broadcast message
 
 typedef enum
 {
