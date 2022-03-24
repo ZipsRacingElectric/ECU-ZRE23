@@ -151,8 +151,6 @@ void send_LED_indicator_state()
     LED_state[0] |= ((car_data.lv_battery_voltage < LOW_LV_VAL) << 3);
     LED_state[0] |= (!car_data.is_25_5_plausible << 4);
 
-    //TODO: add 25-5 plaus status and LV battery status
-
     CAN_Msg_Send(CAN_ID_LED_STATE, CAN_DLC_LED_STATE, LED_state);
 }
 
