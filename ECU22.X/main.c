@@ -24,8 +24,9 @@ int main(void)
     initialize_car_data();
     initialize_change_notification_interrupts();
     initialize_inverter_cmd_data();
+    initialize_ADC();
+
     HV_CTRL_SetHigh(); // allow high voltage to be used
-    ADC1_Enable();
  
     static uint16_t counter = 99;
     static uint16_t IMD_resistance = 0;
