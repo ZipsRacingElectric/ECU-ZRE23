@@ -219,11 +219,11 @@
   @Example
     <code>
     // Set RA4 high (1)
-    OUT2_CTRL_SetHigh();
+    OUT2_SetHigh();
     </code>
 
 */
-#define OUT2_CTRL_SetHigh()          (_LATA4 = 1)
+#define OUT2_SetHigh()          (_LATA4 = 1)
 /**
   @Summary
     Sets the GPIO pin, RA4, low using LATA4.
@@ -243,11 +243,11 @@
   @Example
     <code>
     // Set RA4 low (0)
-    OUT2_CTRL_SetLow();
+    OUT2_SetLow();
     </code>
 
 */
-#define OUT2_CTRL_SetLow()           (_LATA4 = 0)
+#define OUT2_SetLow()           (_LATA4 = 0)
 /**
   @Summary
     Toggles the GPIO pin, RA4, using LATA4.
@@ -267,11 +267,11 @@
   @Example
     <code>
     // Toggle RA4
-    OUT2_CTRL_Toggle();
+    OUT2_Toggle();
     </code>
 
 */
-#define OUT2_CTRL_Toggle()           (_LATA4 ^= 1)
+#define OUT2_Toggle()           (_LATA4 ^= 1)
 /**
   @Summary
     Reads the value of the GPIO pin, RA4.
@@ -293,11 +293,11 @@
     uint16_t portValue;
 
     // Read RA4
-    postValue = OUT2_CTRL_GetValue();
+    postValue = OUT2_GetValue();
     </code>
 
 */
-#define OUT2_CTRL_GetValue()         _RA4
+#define OUT2_GetValue()         _RA4
 /**
   @Summary
     Configures the GPIO pin, RA4, as an input.
@@ -317,11 +317,11 @@
   @Example
     <code>
     // Sets the RA4 as an input
-    OUT2_CTRL_SetDigitalInput();
+    OUT2_SetDigitalInput();
     </code>
 
 */
-#define OUT2_CTRL_SetDigitalInput()  (_TRISA4 = 1)
+#define OUT2_SetDigitalInput()  (_TRISA4 = 1)
 /**
   @Summary
     Configures the GPIO pin, RA4, as an output.
@@ -341,11 +341,11 @@
   @Example
     <code>
     // Sets the RA4 as an output
-    OUT2_CTRL_SetDigitalOutput();
+    OUT2_SetDigitalOutput();
     </code>
 
 */
-#define OUT2_CTRL_SetDigitalOutput() (_TRISA4 = 0)
+#define OUT2_SetDigitalOutput() (_TRISA4 = 0)
 /**
   @Summary
     Sets the GPIO pin, RA8, high using LATA8.
@@ -786,6 +786,152 @@
 #define HV_CTRL_SetDigitalOutput() (_TRISB4 = 0)
 /**
   @Summary
+    Sets the GPIO pin, RC10, high using LATC10.
+
+  @Description
+    Sets the GPIO pin, RC10, high using LATC10.
+
+  @Preconditions
+    The RC10 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RC10 high (1)
+    LV_BATTERY_VOLTAGE_SetHigh();
+    </code>
+
+*/
+#define LV_BATTERY_VOLTAGE_SetHigh()          (_LATC10 = 1)
+/**
+  @Summary
+    Sets the GPIO pin, RC10, low using LATC10.
+
+  @Description
+    Sets the GPIO pin, RC10, low using LATC10.
+
+  @Preconditions
+    The RC10 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RC10 low (0)
+    LV_BATTERY_VOLTAGE_SetLow();
+    </code>
+
+*/
+#define LV_BATTERY_VOLTAGE_SetLow()           (_LATC10 = 0)
+/**
+  @Summary
+    Toggles the GPIO pin, RC10, using LATC10.
+
+  @Description
+    Toggles the GPIO pin, RC10, using LATC10.
+
+  @Preconditions
+    The RC10 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Toggle RC10
+    LV_BATTERY_VOLTAGE_Toggle();
+    </code>
+
+*/
+#define LV_BATTERY_VOLTAGE_Toggle()           (_LATC10 ^= 1)
+/**
+  @Summary
+    Reads the value of the GPIO pin, RC10.
+
+  @Description
+    Reads the value of the GPIO pin, RC10.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    uint16_t portValue;
+
+    // Read RC10
+    postValue = LV_BATTERY_VOLTAGE_GetValue();
+    </code>
+
+*/
+#define LV_BATTERY_VOLTAGE_GetValue()         _RC10
+/**
+  @Summary
+    Configures the GPIO pin, RC10, as an input.
+
+  @Description
+    Configures the GPIO pin, RC10, as an input.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RC10 as an input
+    LV_BATTERY_VOLTAGE_SetDigitalInput();
+    </code>
+
+*/
+#define LV_BATTERY_VOLTAGE_SetDigitalInput()  (_TRISC10 = 1)
+/**
+  @Summary
+    Configures the GPIO pin, RC10, as an output.
+
+  @Description
+    Configures the GPIO pin, RC10, as an output.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RC10 as an output
+    LV_BATTERY_VOLTAGE_SetDigitalOutput();
+    </code>
+
+*/
+#define LV_BATTERY_VOLTAGE_SetDigitalOutput() (_TRISC10 = 0)
+/**
+  @Summary
     Sets the GPIO pin, RC13, high using LATC13.
 
   @Description
@@ -949,11 +1095,11 @@
   @Example
     <code>
     // Set RC3 high (1)
-    OUT1_CTRL_SetHigh();
+    OUT1_SetHigh();
     </code>
 
 */
-#define OUT1_CTRL_SetHigh()          (_LATC3 = 1)
+#define OUT1_SetHigh()          (_LATC3 = 1)
 /**
   @Summary
     Sets the GPIO pin, RC3, low using LATC3.
@@ -973,11 +1119,11 @@
   @Example
     <code>
     // Set RC3 low (0)
-    OUT1_CTRL_SetLow();
+    OUT1_SetLow();
     </code>
 
 */
-#define OUT1_CTRL_SetLow()           (_LATC3 = 0)
+#define OUT1_SetLow()           (_LATC3 = 0)
 /**
   @Summary
     Toggles the GPIO pin, RC3, using LATC3.
@@ -997,11 +1143,11 @@
   @Example
     <code>
     // Toggle RC3
-    OUT1_CTRL_Toggle();
+    OUT1_Toggle();
     </code>
 
 */
-#define OUT1_CTRL_Toggle()           (_LATC3 ^= 1)
+#define OUT1_Toggle()           (_LATC3 ^= 1)
 /**
   @Summary
     Reads the value of the GPIO pin, RC3.
@@ -1023,11 +1169,11 @@
     uint16_t portValue;
 
     // Read RC3
-    postValue = OUT1_CTRL_GetValue();
+    postValue = OUT1_GetValue();
     </code>
 
 */
-#define OUT1_CTRL_GetValue()         _RC3
+#define OUT1_GetValue()         _RC3
 /**
   @Summary
     Configures the GPIO pin, RC3, as an input.
@@ -1047,11 +1193,11 @@
   @Example
     <code>
     // Sets the RC3 as an input
-    OUT1_CTRL_SetDigitalInput();
+    OUT1_SetDigitalInput();
     </code>
 
 */
-#define OUT1_CTRL_SetDigitalInput()  (_TRISC3 = 1)
+#define OUT1_SetDigitalInput()  (_TRISC3 = 1)
 /**
   @Summary
     Configures the GPIO pin, RC3, as an output.
@@ -1071,11 +1217,11 @@
   @Example
     <code>
     // Sets the RC3 as an output
-    OUT1_CTRL_SetDigitalOutput();
+    OUT1_SetDigitalOutput();
     </code>
 
 */
-#define OUT1_CTRL_SetDigitalOutput() (_TRISC3 = 0)
+#define OUT1_SetDigitalOutput() (_TRISC3 = 0)
 /**
   @Summary
     Sets the GPIO pin, RC4, high using LATC4.
@@ -1806,6 +1952,152 @@
 
 */
 #define LED4_SetDigitalOutput() (_TRISC9 = 0)
+/**
+  @Summary
+    Sets the GPIO pin, RG9, high using LATG9.
+
+  @Description
+    Sets the GPIO pin, RG9, high using LATG9.
+
+  @Preconditions
+    The RG9 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RG9 high (1)
+    IMD_RESISTANCE_SetHigh();
+    </code>
+
+*/
+#define IMD_RESISTANCE_SetHigh()          (_LATG9 = 1)
+/**
+  @Summary
+    Sets the GPIO pin, RG9, low using LATG9.
+
+  @Description
+    Sets the GPIO pin, RG9, low using LATG9.
+
+  @Preconditions
+    The RG9 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RG9 low (0)
+    IMD_RESISTANCE_SetLow();
+    </code>
+
+*/
+#define IMD_RESISTANCE_SetLow()           (_LATG9 = 0)
+/**
+  @Summary
+    Toggles the GPIO pin, RG9, using LATG9.
+
+  @Description
+    Toggles the GPIO pin, RG9, using LATG9.
+
+  @Preconditions
+    The RG9 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Toggle RG9
+    IMD_RESISTANCE_Toggle();
+    </code>
+
+*/
+#define IMD_RESISTANCE_Toggle()           (_LATG9 ^= 1)
+/**
+  @Summary
+    Reads the value of the GPIO pin, RG9.
+
+  @Description
+    Reads the value of the GPIO pin, RG9.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    uint16_t portValue;
+
+    // Read RG9
+    postValue = IMD_RESISTANCE_GetValue();
+    </code>
+
+*/
+#define IMD_RESISTANCE_GetValue()         _RG9
+/**
+  @Summary
+    Configures the GPIO pin, RG9, as an input.
+
+  @Description
+    Configures the GPIO pin, RG9, as an input.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RG9 as an input
+    IMD_RESISTANCE_SetDigitalInput();
+    </code>
+
+*/
+#define IMD_RESISTANCE_SetDigitalInput()  (_TRISG9 = 1)
+/**
+  @Summary
+    Configures the GPIO pin, RG9, as an output.
+
+  @Description
+    Configures the GPIO pin, RG9, as an output.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RG9 as an output
+    IMD_RESISTANCE_SetDigitalOutput();
+    </code>
+
+*/
+#define IMD_RESISTANCE_SetDigitalOutput() (_TRISG9 = 0)
 
 /**
     Section: Function Prototypes

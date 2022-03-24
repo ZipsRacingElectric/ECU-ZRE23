@@ -32,6 +32,9 @@ static uint16_t brake_2;
 // dash led indicator variables
 static uint8_t LED_state[1];
 
+// status message variables
+static uint8_t status_message[CAN_DLC_STATUS];
+
 extern struct Car_Data car_data;
 
 void CAN_Initialize(void)
@@ -143,10 +146,22 @@ void send_LED_indicator_state()
     {
         LED_state[0] |= 0b01;
     }
-    
+        
     LED_state[0] |= (car_data.inverter_fault_present << 2);
-    
+    LED_state[0] |= ((car_data.lv_battery_voltage < LOW_LV_VAL) << 3);
+    LED_state[0] |= (!car_data.is_25_5_plausible << 4);
+
     //TODO: add 25-5 plaus status and LV battery status
 
     CAN_Msg_Send(CAN_ID_LED_STATE, CAN_DLC_LED_STATE, LED_state);
+}
+
+void send_status_message()
+{
+    status_message[0] = car_data.lv_battery_voltage & 0xFF;
+    status_message[1] = (car_data.lv_battery_voltage >> 8) & 0xFF;
+    status_message[2] = car_data.IMD_resistance & 0xFF;
+    status_message[3] = (car_data.IMD_resistance >> 8) & 0xFF;
+
+    CAN_Msg_Send(CAN_ID_STATUS, CAN_DLC_STATUS, status_message);
 }

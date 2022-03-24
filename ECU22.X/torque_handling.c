@@ -31,7 +31,6 @@ static uint16_t RAW_APPS2_25_PERCENT;                                           
 static uint16_t RAW_APPS2_5_PERCENT;                                                        // used for 25/5 plausibility check
 
 static volatile bool is_plausible = true;
-static volatile bool is_25_5_plausible = true;
 static volatile bool is_100_ms_plausible = true;
 
 static volatile bool message_received = false;
@@ -116,7 +115,7 @@ void check_25_5_plausibility()
 {
     if((brake_1 > BRK1_BRAKING_HARD || brake_2 > BRK2_BRAKING_HARD) && (apps_1 > APPS1_25_PERCENT || raw_apps_2 > RAW_APPS2_25_PERCENT))
     {
-        is_25_5_plausible = false;
+        car_data.is_25_5_plausible = false;
         
         // TODO:add CAN message to send this fault to dash
         
@@ -127,7 +126,7 @@ void check_25_5_plausibility()
     // allow torque requests when APPSs go below 5% throttle
     if(apps_1 < APPS1_5_PERCENT && raw_apps_2 < RAW_APPS2_5_PERCENT)
     {
-        is_25_5_plausible = true;
+        car_data.is_25_5_plausible = true;
         
         //TODO: add CAN message to send fault clear to dash
         
@@ -178,7 +177,7 @@ void send_torque_request()
     }
     
     // good to send torque request
-    if (message_not_received_count <= 5 && is_25_5_plausible && is_100_ms_plausible && car_data.ready_to_drive)
+    if (message_not_received_count <= 5 && car_data.is_25_5_plausible && is_100_ms_plausible && car_data.ready_to_drive)
     {
         calculate_torque_request();
         inverter_cmd_data[0] = torque_times_ten & 0xFF;         // low order torque request byte

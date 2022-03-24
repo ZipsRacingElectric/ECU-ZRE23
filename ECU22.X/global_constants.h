@@ -12,20 +12,17 @@
 #include "macros.h"
 #include <stdint.h>
 
-#define FCY 40000000UL          // instruction cycle frequency, Hz - required for __delayXXX() to work
+#define FCY 40000000UL  // instruction cycle frequency, Hz - required for __delayXXX() to work
 
 //CAN Constants
 #define CAN_ID_ACAN                 0x05
 #define CAN_ID_DASH                 0xFF
-
-#define CAN_ID_IMD_RESISTANCE       0x651               // id of message broadcasting IMD measured resistance
-#define CAN_DLC_IMD_RESISTANCE      2                   // 2 bytes of data
  
 #define CAN_ID_LED_STATE            0x321               // id of message from ECU to dash containing LED states
 #define CAN_DLC_LED_STATE           1                   // LED message to dash is 1 byte
  
-#define CAN_ID_LV_BATTERY           0x541               // id of message broadcasting LV voltage
-#define CAN_DLC_LV_BATTERY          2                   // 2 bytes of data
+#define CAN_ID_STATUS               0x541               // id of message broadcasting LV voltage and IMD resistance
+#define CAN_DLC_STATUS              4                   // 2 bytes of data
  
 #define INVOFFSET                   0xA0 - 0xA0         // offset for inverter ids for CAN messages, actual offset - default offset
 #define CAN_ID_INVERTER_HEARTBEAT   0x0C0 + INVOFFSET   // id of inverter heartbeat message
