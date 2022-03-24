@@ -108,24 +108,28 @@
 #include "clock.h"
 #include "system.h"
 #include "system_types.h"
-#include "dma.h"
-#include "tmr2.h"
-#include "tmr1.h"
 #include "tmr4.h"
+#include "dma.h"
+#include "tmr5.h"
+#include "tmr2.h"
 #include "tmr3.h"
-#include "can1.h"
 #include "interrupt_manager.h"
 #include "traps.h"
+#include "adc1.h"
+#include "can1.h"
+#include "tmr1.h"
 
 void SYSTEM_Initialize(void)
 {
     PIN_MANAGER_Initialize();
     CLOCK_Initialize();
     INTERRUPT_Initialize();
-    TMR3_Initialize();
     TMR4_Initialize();
     CAN1_Initialize();
     TMR2_Initialize();
+    ADC1_Initialize();
+    TMR3_Initialize();
+    TMR5_Initialize();
     DMA_Initialize();
     TMR1_Initialize();
     INTERRUPT_GlobalEnable();

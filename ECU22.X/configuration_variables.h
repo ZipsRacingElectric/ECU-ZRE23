@@ -43,5 +43,7 @@
 
 #define MAX_ACAN_MSG_NOT_RECEIVED_COUNT 5   // how many messages are allowed to be missed before sending 0 torque request
 
+#define LOW_LV_VAL 609  //12 V on the battery is divided down to 2.976 V, ADC produces ~609
+
 #endif	/* CONFIGURATION_VARIABLES_H */
 

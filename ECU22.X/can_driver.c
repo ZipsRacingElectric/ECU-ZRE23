@@ -7,10 +7,12 @@
 #include "state_manager.h"
 #include "torque_handling.h"
 #include "can_driver.h"
+#include "car_data.h"
 
 static void CAN_Handle_Message_Rx(void);
 static void handle_dash_msg(uint8_t* message_data);
 static void handle_acan_message(uint8_t* message_data);
+static void handle_inverter_fault_message(uint8_t* message_data);
 
 static CAN_MSG_OBJ message;
 static uint8_t can_data[8] = {0,0,0,0,0,0,0,0};
@@ -26,6 +28,14 @@ static uint16_t raw_apps_2;
 static uint16_t scaled_apps_2;
 static uint16_t brake_1;
 static uint16_t brake_2;
+
+// dash led indicator variables
+static uint8_t LED_state[1];
+
+// status message variables
+static uint8_t status_message[CAN_DLC_STATUS];
+
+extern struct Car_Data car_data;
 
 void CAN_Initialize(void)
 {
@@ -46,12 +56,15 @@ void CAN_Handle_Message_Rx(void)
     {
         switch(message.msgId)
         {
-            case DASH_MSG_ID:
+            case CAN_ID_DASH:
                 handle_dash_msg(message.data);
                 break;
                 
-            case ACAN_MSG_ID:
+            case CAN_ID_ACAN:
                 handle_acan_message(message.data);
+                break;
+            case CAN_ID_INVERTER_FAULT:
+                handle_inverter_fault_message(message.data);
                 break;
         }
     }
@@ -99,4 +112,54 @@ void handle_acan_message(uint8_t* message_data)
     brake_2 = (message_data[7] << 8) | message_data[6];
     
     set_pedal_position_data(apps_1, raw_apps_2, brake_1, brake_2);
+}
+
+void handle_inverter_fault_message(uint8_t* message_data)
+{
+    // no fault detected
+    if (message_data[0] == 0 && message_data[1] == 0 && message_data[2] == 0 && message_data[3] == 0 
+            && message_data[4] == 0 && message_data[5] == 0 && message_data[6] == 0 && message_data[7] == 0)
+    {
+        car_data.inverter_fault_present = false;
+        return;
+    }
+    
+    car_data.inverter_fault_present = true;
+}
+
+void send_LED_indicator_state()
+{
+    LED_state[0] = 0;
+    
+    if (HV_ON_GetValue())
+    {
+        if (car_data.ready_to_drive)
+        {
+            LED_state[0] |= 0b11;
+        }
+        else
+        {
+            LED_state[0] |= 0b10;
+        }
+    }
+    else
+    {
+        LED_state[0] |= 0b01;
+    }
+        
+    LED_state[0] |= (car_data.inverter_fault_present << 2);
+    LED_state[0] |= ((car_data.lv_battery_voltage < LOW_LV_VAL) << 3);
+    LED_state[0] |= (!car_data.is_25_5_plausible << 4);
+
+    CAN_Msg_Send(CAN_ID_LED_STATE, CAN_DLC_LED_STATE, LED_state);
+}
+
+void send_status_message()
+{
+    status_message[0] = car_data.lv_battery_voltage & 0xFF;
+    status_message[1] = (car_data.lv_battery_voltage >> 8) & 0xFF;
+    status_message[2] = car_data.IMD_resistance & 0xFF;
+    status_message[3] = (car_data.IMD_resistance >> 8) & 0xFF;
+
+    CAN_Msg_Send(CAN_ID_STATUS, CAN_DLC_STATUS, status_message);
 }

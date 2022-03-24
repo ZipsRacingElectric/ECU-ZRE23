@@ -94,8 +94,8 @@ void DMA_Initialize(void)
 
     // AMODE Peripheral Indirect Addressing mode; CHEN disabled; SIZE 16 bit; DIR Reads from peripheral address, writes to RAM address; NULLW disabled; HALF Initiates interrupt when all of the data has been moved; MODE Continuous, Ping-Pong modes are disabled; 
     DMA2CON= 0x20 & 0x7FFF; //Enable DMA Channel later;
-    // IRQSEL SPI1; FORCE disabled; 
-    DMA2REQ= 0x0A;
+    // IRQSEL INT0; FORCE disabled; 
+    DMA2REQ= 0x00;
     // STA 0; 
     DMA2STAH= 0x00;
     // STA 4096; 
