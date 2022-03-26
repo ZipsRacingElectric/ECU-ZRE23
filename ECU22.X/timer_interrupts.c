@@ -7,7 +7,6 @@
 #include "mcc_generated_files/tmr2.h"
 #include "mcc_generated_files/tmr3.h"
 #include "mcc_generated_files/tmr4.h"
-#include "mcc_generated_files/tmr5.h"
 
 static uint16_t counter = 0;
 
@@ -33,7 +32,6 @@ void initialize_timers()
     TMR2_Start();
     TMR3_Stop();
     TMR4_Stop();
-    TMR5_Start();
 
     // control + click on the function parameters to go to the function definitions :)
     
