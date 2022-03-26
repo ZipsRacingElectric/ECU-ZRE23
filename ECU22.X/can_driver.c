@@ -103,7 +103,6 @@ void handle_dash_msg(uint8_t* message_data)
     if (is_DRS_pressed && !car_data.is_braking)
     {
         car_data.DRS_enabled = !car_data.DRS_enabled;
-        send_DRS_command();
     }
     
     if (is_start_pressed)
