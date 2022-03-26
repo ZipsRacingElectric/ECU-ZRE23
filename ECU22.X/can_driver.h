@@ -18,6 +18,7 @@ void CAN_Initialize(void);
 void CAN_Msg_Send(uint16_t id, CAN_DLC dlc, uint8_t *tx_data);
 void send_LED_indicator_state();
 void send_status_message();
+void send_DRS_command();
 
 #ifdef	__cplusplus
 }

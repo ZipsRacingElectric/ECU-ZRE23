@@ -9,6 +9,24 @@
 #include "mcc_generated_files/tmr4.h"
 #include "mcc_generated_files/tmr5.h"
 
+static uint16_t counter = 0;
+
+// called every 20 ms
+static void twenty_ms_interrupt_service()
+{
+    // run every 20 ms
+    send_torque_request();
+    send_DRS_command();
+    
+    // run every 100 ms
+    if (counter % 5 == 0)
+    {
+        send_LED_indicator_state();
+    }
+    
+    counter == 10000 ? counter = 0 : ++counter;
+}
+
 void initialize_timers()
 {
     TMR1_Stop();
@@ -20,8 +38,7 @@ void initialize_timers()
     // control + click on the function parameters to go to the function definitions :)
     
     TMR1_SetInterruptHandler(trigger_100_ms_implausibility);    
-    TMR2_SetInterruptHandler(send_torque_request);
+    TMR2_SetInterruptHandler(twenty_ms_interrupt_service);
     TMR3_SetInterruptHandler(end_RTD_buzzer);
     TMR4_SetInterruptHandler(exit_ready_to_drive);
-    TMR5_SetInterruptHandler(send_LED_indicator_state);  // combine this timer interrupt service with timer 2 if a timer is needed for something else.
 }

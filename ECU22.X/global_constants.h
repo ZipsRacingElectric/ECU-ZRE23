@@ -29,6 +29,9 @@
 #define CAN_DLC_INVERTER_HEARTBEAT  8                   // inv heartbeat message is 8 bytes
 #define CAN_ID_INVERTER_FAULT       0xAB  + INVOFFSET   // id of inverter fault broadcast message
 
+#define CAN_ID_DRS                  0x123               // id of DRS command message
+#define CAN_DLC_DRS                 1                   // DRS command is 1 byte
+
 typedef enum
 {
 	DEBUG = 0,

@@ -20,6 +20,7 @@ static uint8_t can_data[8] = {0,0,0,0,0,0,0,0};
 // dash message handler variables
 static bool is_start_pressed = false;
 static bool is_reset_pressed = false;
+static bool is_DRS_pressed = false;
 static VEHICLE_MODES dash_mode = NAW;
 
 // acan message handler variables
@@ -34,6 +35,9 @@ static uint8_t LED_state[1];
 
 // status message variables
 static uint8_t status_message[CAN_DLC_STATUS];
+
+// DRS message variable
+static uint8_t DRS_command[CAN_DLC_DRS];
 
 extern struct Car_Data car_data;
 
@@ -91,9 +95,16 @@ void handle_dash_msg(uint8_t* message_data)
 {
     is_start_pressed = message_data[0] & 0x1;           // get bit 0 of frame 0
     is_reset_pressed = (message_data[0] >> 1) & 0x1;    // get bit 1 of frame 0
+    is_DRS_pressed = (message_data[0] >> 2) & 0x1;      // get bit 2 of frame 0
     dash_mode = (message_data[0] >> 4) & 0x7;           // get bits 4, 5, and 6 of frame 0
 
     update_vehicle_mode(dash_mode);
+    
+    if (is_DRS_pressed && !car_data.is_braking)
+    {
+        car_data.DRS_enabled = !car_data.DRS_enabled;
+        send_DRS_command();
+    }
     
     if (is_start_pressed)
     {
@@ -162,4 +173,10 @@ void send_status_message()
     status_message[3] = (car_data.IMD_resistance >> 8) & 0xFF;
 
     CAN_Msg_Send(CAN_ID_STATUS, CAN_DLC_STATUS, status_message);
+}
+
+void send_DRS_command()
+{
+    DRS_command[0] = car_data.DRS_enabled;
+    CAN_Msg_Send(CAN_ID_DRS, CAN_DLC_DRS, DRS_command);
 }
