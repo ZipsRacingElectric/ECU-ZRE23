@@ -19,8 +19,10 @@ static uint8_t can_data[8] = {0,0,0,0,0,0,0,0};
 
 // dash message handler variables
 static bool is_start_pressed = false;
-static bool is_reset_pressed = false;
+static bool is_inverter_fault_clear_pressed = false;
 static VEHICLE_MODES dash_mode = NAW;
+static uint8_t inverter_fault_clear[8] = {20,0,1,0,0,0,0,0};
+static uint8_t zero_torque_request[8] = {0,0,0,0,1,0, (TORQUE_MAX * 10) & 0xFF, ((TORQUE_MAX * 10) >> 8) & 0xFF};
 
 // acan message handler variables
 static uint16_t apps_1;
@@ -90,7 +92,7 @@ void CAN_Msg_Send(uint16_t id, CAN_DLC dlc, uint8_t *tx_data)
 void handle_dash_msg(uint8_t* message_data) 
 {
     is_start_pressed = message_data[0] & 0x1;           // get bit 0 of frame 0
-    is_reset_pressed = (message_data[0] >> 1) & 0x1;    // get bit 1 of frame 0
+    is_inverter_fault_clear_pressed = (message_data[0] >> 1) & 0x1;    // get bit 1 of frame 0
     dash_mode = (message_data[0] >> 4) & 0x7;           // get bits 4, 5, and 6 of frame 0
 
     update_vehicle_mode(dash_mode);
@@ -98,6 +100,12 @@ void handle_dash_msg(uint8_t* message_data)
     if (is_start_pressed)
     {
         set_ready_to_drive();
+    }
+    
+    if (is_inverter_fault_clear_pressed)
+    {
+        CAN_Msg_Send(CAN_ID_INVERTER_FAULT_CLEAR, CAN_DLC_INVERTER_FAULT_CLEAR, inverter_fault_clear);
+        CAN_Msg_Send(CAN_ID_INVERTER_HEARTBEAT, CAN_DLC_INVERTER_HEARTBEAT, zero_torque_request);
     }
 }
 
@@ -136,10 +144,12 @@ void send_LED_indicator_state()
         if (car_data.ready_to_drive)
         {
             LED_state[0] |= 0b11;
+            LED_state[0] |= (!car_data.is_25_5_plausible << 4);
         }
         else
         {
             LED_state[0] |= 0b10;
+            LED_state[0] |= 0b0 << 4;
         }
     }
     else
@@ -149,7 +159,7 @@ void send_LED_indicator_state()
         
     LED_state[0] |= (car_data.inverter_fault_present << 2);
     LED_state[0] |= ((car_data.lv_battery_voltage < LOW_LV_VAL) << 3);
-    LED_state[0] |= (!car_data.is_25_5_plausible << 4);
+    
 
     CAN_Msg_Send(CAN_ID_LED_STATE, CAN_DLC_LED_STATE, LED_state);
 }

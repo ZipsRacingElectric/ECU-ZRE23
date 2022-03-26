@@ -117,8 +117,6 @@ void check_25_5_plausibility()
     {
         car_data.is_25_5_plausible = false;
         
-        // TODO:add CAN message to send this fault to dash
-        
         LED3_SetLow();
         LED2_SetHigh();
     }
@@ -127,8 +125,6 @@ void check_25_5_plausibility()
     if(apps_1 < APPS1_5_PERCENT && raw_apps_2 < RAW_APPS2_5_PERCENT)
     {
         car_data.is_25_5_plausible = true;
-        
-        //TODO: add CAN message to send fault clear to dash
         
         LED3_SetHigh();
         LED2_SetLow();
