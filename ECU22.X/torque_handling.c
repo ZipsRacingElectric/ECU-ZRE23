@@ -5,6 +5,7 @@
 #include "configuration_variables.h"
 #include "mcc_generated_files/tmr1.h"
 #include "car_data.h"
+#include "can_driver.h" // TODO: figure out this circular reference
 
 static void check_apps_and_brakes_plausibility();
 static void check_25_5_plausibility();
@@ -42,7 +43,7 @@ static volatile uint16_t scaled_apps_2;
 static volatile uint16_t brake_1;
 static volatile uint16_t brake_2;
 
-static volatile uint8_t inverter_cmd_data[8];
+static uint8_t inverter_cmd_data[8];
 
 static volatile int16_t torque_times_ten;
 
@@ -136,6 +137,11 @@ void set_brake_state()
     if (brake_1 > BRK1_BRAKING || brake_2 > BRK2_BRAKING)
     {
         car_data.is_braking = true;
+        if (car_data.DRS_enabled)
+        {
+            car_data.DRS_enabled = false;
+        }
+        
         BRK_CTRL_SetHigh();
     }
     else

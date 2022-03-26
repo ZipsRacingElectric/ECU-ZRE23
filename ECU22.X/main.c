@@ -29,7 +29,6 @@ int main(void)
     HV_CTRL_SetHigh(); // allow high voltage to be used
  
     static uint16_t counter = 99;
-    static uint16_t IMD_resistance = 0;
     
     extern struct Car_Data car_data;
 

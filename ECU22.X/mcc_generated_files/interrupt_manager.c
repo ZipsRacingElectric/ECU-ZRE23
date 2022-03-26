@@ -58,9 +58,6 @@ void INTERRUPT_Initialize (void)
     //    CI: ECAN1 Event
     //    Priority: 1
         IPC8bits.C1IP = 1;
-    //    TI: Timer 5
-    //    Priority: 1
-        IPC7bits.T5IP = 1;
     //    TI: Timer 4
     //    Priority: 1
         IPC6bits.T4IP = 1;

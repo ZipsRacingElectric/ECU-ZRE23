@@ -14,4 +14,5 @@ void initialize_car_data()
     car_data.lv_battery_voltage = 0;
     car_data.IMD_resistance = 0;
     car_data.is_25_5_plausible = true;
+    car_data.DRS_enabled = false;
 }

@@ -22,6 +22,7 @@ struct Car_Data
     bool accelerator_is_pressed;
     bool inverter_fault_present;
     bool is_25_5_plausible;
+    bool DRS_enabled;
     volatile VEHICLE_MODES mode;
     uint16_t lv_battery_voltage;
     uint16_t IMD_resistance;

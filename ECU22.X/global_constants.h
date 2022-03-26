@@ -31,6 +31,9 @@
 #define CAN_ID_INVERTER_FAULT_CLEAR 0xC1  + INVOFFSET   // id of inverter fault clear message
 #define CAN_DLC_INVERTER_FAULT_CLEAR  8                 // inv clear fault message is 8 bytes
 
+#define CAN_ID_DRS                  0x123               // id of DRS command message
+#define CAN_DLC_DRS                 1                   // DRS command is 1 byte
+
 typedef enum
 {
 	DEBUG = 0,
