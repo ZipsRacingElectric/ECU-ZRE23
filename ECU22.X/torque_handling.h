@@ -23,6 +23,7 @@ void initialize_inverter_cmd_data();
 
 // sets the max torque request to a percentage of the overall max torque
 void set_torque_limit(uint8_t torque_percent);
+void set_regen_torque(uint8_t torque_percent);
 
 #ifdef	__cplusplus
 }

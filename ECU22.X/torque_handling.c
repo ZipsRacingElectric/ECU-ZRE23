@@ -5,7 +5,8 @@
 #include "configuration_variables.h"
 #include "mcc_generated_files/tmr1.h"
 #include "car_data.h"
-#include "can_driver.h" // TODO: figure out this circular reference
+#include "can_driver.h"
+#include "mcc_generated_files/adc1.h" // TODO: figure out this circular reference
 
 static void check_apps_and_brakes_plausibility();
 static void check_25_5_plausibility();
@@ -16,6 +17,7 @@ static void calculate_torque_request();
 extern struct Car_Data car_data;
 
 static double scaled_torque_limit = 0;    // stores the maximum torque for the current drive mode
+static double scaled_regen_torque_times_10 = 0;
 
 static const uint16_t APPS1_25_PERCENT = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 4 + APPS1_REAL_MIN;    // used for 25/5 plausibility check
 static const uint16_t APPS1_5_PERCENT = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 20 + APPS1_REAL_MIN;    // used for 25/5 plausibility check
@@ -212,12 +214,24 @@ void set_torque_limit(uint8_t torque_percent)
     scaled_torque_limit = TORQUE_MAX * torque_percent / 100;
 }
 
+void set_regen_torque(uint8_t torque_percent)
+{
+    scaled_regen_torque_times_10 = REGEN_TORQUE_MAX * torque_percent / 10; // 10 * x/100 = x/10
+}
+
 void calculate_torque_request()
 {
-    //TODO: regen logic
     if (apps_1 < APPS1_ACCEL_START)
     {
-        torque_times_ten = 0;
+        if (car_data.regen_enabled) 
+        {
+            torque_times_ten = -scaled_regen_torque_times_10;   // if you forget to put the negative here, we're gonna have a bad time.
+        }
+        else
+        {
+            torque_times_ten = 0;
+        }
+        
         return;
     }
     

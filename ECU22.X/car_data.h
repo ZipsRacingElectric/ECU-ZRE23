@@ -23,9 +23,13 @@ struct Car_Data
     bool inverter_fault_present;
     bool is_25_5_plausible;
     bool DRS_enabled;
+    bool regen_enabled;
+    uint8_t regen_percent;
+    volatile REGEN_MODE regen_mode;
     volatile VEHICLE_MODES mode;
     uint16_t lv_battery_voltage;
     uint16_t IMD_resistance;
+    uint16_t maximum_torque_percent;
 };
 
 void initialize_car_data();

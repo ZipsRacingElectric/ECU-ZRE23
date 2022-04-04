@@ -34,6 +34,9 @@
 #define CAN_ID_DRS                  0x123               // id of DRS command message
 #define CAN_DLC_DRS                 1                   // DRS command is 1 byte
 
+#define CAN_ID_DASH_TORQUE_PERCENTAGE 0xFA              // id of message that tells the dashboard the current torque percentage
+#define CAN_DLC_DASH_TORQUE_PERCENTAGE 2
+
 typedef enum
 {
 	DEBUG = 0,
@@ -45,6 +48,18 @@ typedef enum
     BEANS = 6,
     NAW = 7         // state for when selector switch is between positions (cause switch is break before make)
 } VEHICLE_MODES;
+
+typedef enum
+{
+	PERCENT_15 = 0,
+    PERCENT_30 = 1,
+    PERCENT_45 = 2,
+    PERCENT_60 = 3,
+    PERCENT_75 = 4,
+	PERCENT_90 = 5,
+    PERCENT_100 = 6,
+    INVALID = 7         // state for when selector switch is between positions (cause switch is break before make)
+} REGEN_MODE;
 
 #endif	/* GLOBAL_CONSTANTS_H */
 

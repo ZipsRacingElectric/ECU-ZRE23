@@ -18,17 +18,18 @@ static CAN_MSG_OBJ message;
 static uint8_t can_data[8] = {0,0,0,0,0,0,0,0};
 
 // dash message handler variables
-static bool is_start_pressed = false;
-static bool is_DRS_pressed = false;
+static bool is_start_button_pressed = false;
+static bool is_DRS_button_pressed = false;
 static bool is_inverter_fault_clear_button_pressed = false;
+static bool is_regen_button_pressed = false;
 static VEHICLE_MODES dash_mode = NAW;
+static REGEN_MODE regen_mode = INVALID;
 static uint8_t inverter_fault_clear[8] = {20,0,1,0,0,0,0,0};
 static uint8_t zero_torque_request[8] = {0,0,0,0,1,0, (TORQUE_MAX * 10) & 0xFF, ((TORQUE_MAX * 10) >> 8) & 0xFF};
 
 // acan message handler variables
 static uint16_t apps_1;
 static uint16_t raw_apps_2;
-static uint16_t scaled_apps_2;
 static uint16_t brake_1;
 static uint16_t brake_2;
 
@@ -40,6 +41,8 @@ static uint8_t status_message[CAN_DLC_STATUS];
 
 // DRS message variable
 static uint8_t DRS_command[CAN_DLC_DRS];
+
+static uint8_t torque_percentage_message[CAN_DLC_DASH_TORQUE_PERCENTAGE];
 
 extern struct Car_Data car_data;
 
@@ -95,19 +98,27 @@ void CAN_Msg_Send(uint16_t id, CAN_DLC dlc, uint8_t *tx_data)
 
 void handle_dash_msg(uint8_t* message_data) 
 {
-    is_start_pressed = message_data[0] & 0x1;                               // get bit 0 of frame 0
+    is_start_button_pressed = message_data[0] & 0x1;                        // get bit 0 of frame 0
     is_inverter_fault_clear_button_pressed = (message_data[0] >> 1) & 0x1;  // get bit 1 of frame 0
-    is_DRS_pressed = (message_data[0] >> 2) & 0x1;                          // get bit 2 of frame 0
-    dash_mode = (message_data[0] >> 4) & 0x7;                               // get bits 4, 5, and 6 of frame 0
+    is_DRS_button_pressed = (message_data[0] >> 2) & 0x1;                   // get bit 2 of frame 0
+    is_regen_button_pressed = (message_data[0] >> 3) & 0x1;                 // get bit 3 of frame 0
+    dash_mode = (message_data[0] >> 4) & 0b111;                             // get bits 4, 5, and 6 of frame 0
+    regen_mode = message_data[1] & 0b111;                                // get bits 0, 1, and 2 of frame 1
 
     update_vehicle_mode(dash_mode);
+    update_regen_torque_mode(regen_mode);
     
-    if (is_DRS_pressed && !car_data.is_braking)
+    if (is_DRS_button_pressed && !car_data.is_braking)
     {
         car_data.DRS_enabled = !car_data.DRS_enabled;
     }
     
-    if (is_start_pressed)
+    if (is_regen_button_pressed)
+    {
+        car_data.regen_enabled = !car_data.regen_enabled;
+    }
+    
+    if (is_start_button_pressed)
     {
         set_ready_to_drive();
     }
@@ -188,4 +199,11 @@ void send_DRS_command()
 {
     DRS_command[0] = car_data.DRS_enabled;
     CAN_Msg_Send(CAN_ID_DRS, CAN_DLC_DRS, DRS_command);
+}
+
+void send_torque_percentage_message()
+{
+    torque_percentage_message[0] = car_data.maximum_torque_percent;
+    torque_percentage_message[1] = car_data.regen_enabled ? car_data.regen_percent : 0;
+    CAN_Msg_Send(CAN_ID_DASH_TORQUE_PERCENTAGE, CAN_DLC_DASH_TORQUE_PERCENTAGE, torque_percentage_message);
 }
