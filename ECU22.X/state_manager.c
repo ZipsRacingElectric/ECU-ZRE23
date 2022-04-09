@@ -9,6 +9,7 @@
 extern struct Car_Data car_data;
 
 static uint8_t percent = 0;
+static REGEN_MODE prev_regen_mode;
 
 void update_vehicle_mode(VEHICLE_MODES dash_mode)
 {
@@ -20,37 +21,30 @@ void update_vehicle_mode(VEHICLE_MODES dash_mode)
     switch (dash_mode)
     {
         case DEBUG:
-            set_torque_limit(TORQUE_PERCENT_DEBUG);
             car_data.maximum_torque_percent = TORQUE_PERCENT_DEBUG;
             break;
 
         case DAN:
-            set_torque_limit(TORQUE_PERCENT_DAN);
             car_data.maximum_torque_percent = TORQUE_PERCENT_DAN;
             break;
 
         case SKIDPAD:
-            set_torque_limit(TORQUE_PERCENT_SKIDPAD);
             car_data.maximum_torque_percent = TORQUE_PERCENT_SKIDPAD;
             break;
 
         case ENDURANCE:
-            set_torque_limit(TORQUE_PERCENT_ENDURANCE);
             car_data.maximum_torque_percent = TORQUE_PERCENT_ENDURANCE;
             break;
 
         case AUTOCROSS:
-            set_torque_limit(TORQUE_PERCENT_AUTOCROSS);
             car_data.maximum_torque_percent = TORQUE_PERCENT_AUTOCROSS;
             break;
 
         case ACCEL:
-            set_torque_limit(TORQUE_PERCENT_ACCEL);
             car_data.maximum_torque_percent = TORQUE_PERCENT_ACCEL;
             break;
 
         case BEANS:
-            set_torque_limit(TORQUE_PERCENT_BEANS);
             car_data.maximum_torque_percent = TORQUE_PERCENT_BEANS;
             break;
 
@@ -58,6 +52,8 @@ void update_vehicle_mode(VEHICLE_MODES dash_mode)
         default:
             // don't change torque limit if an invalid mode was sent
             break;
+            
+        set_torque_limit(car_data.maximum_torque_percent);
     }
     
     car_data.mode = dash_mode;
@@ -65,7 +61,7 @@ void update_vehicle_mode(VEHICLE_MODES dash_mode)
 
 void update_regen_torque_mode(REGEN_MODE mode)
 {
-    if (mode == car_data.regen_mode)
+    if (mode == prev_regen_mode)
     {
         return;
     }
@@ -73,34 +69,33 @@ void update_regen_torque_mode(REGEN_MODE mode)
     switch (mode)
     {
         case PERCENT_15:
-            percent = 15;
+            car_data.regen_percent = 15;
             break;
         case PERCENT_30:
-            percent = 30;
+            car_data.regen_percent = 30;
             break;
         case PERCENT_45:
-            percent = 45;
+            car_data.regen_percent = 45;
             break;
         case PERCENT_60:
-            percent = 60;
+            car_data.regen_percent = 60;
             break;
         case PERCENT_75:
-            percent = 75;
+            car_data.regen_percent = 75;
             break;
         case PERCENT_90:
-            percent = 90;
+            car_data.regen_percent = 90;
             break;
         case PERCENT_100:
-            percent = 100;
+            car_data.regen_percent = 100;
             break;
         case INVALID:
         default:
             break;
     }
     
-    set_regen_torque(percent);
-    car_data.regen_percent = percent;
-    car_data.regen_mode = mode;
+    set_regen_torque(car_data.regen_percent);
+    prev_regen_mode = mode;
 }
 
 void set_ready_to_drive()

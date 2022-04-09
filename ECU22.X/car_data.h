@@ -25,7 +25,6 @@ struct Car_Data
     bool DRS_enabled;
     bool regen_enabled;
     uint8_t regen_percent;
-    volatile REGEN_MODE regen_mode;
     volatile VEHICLE_MODES mode;
     uint16_t lv_battery_voltage;
     uint16_t IMD_resistance;
