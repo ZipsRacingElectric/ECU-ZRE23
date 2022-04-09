@@ -21,6 +21,7 @@ static void twenty_ms_interrupt_service()
     if (counter % 5 == 0)
     {
         send_LED_indicator_state();
+        send_torque_percentage_message();
     }
     
     counter == 10000 ? counter = 0 : ++counter;
