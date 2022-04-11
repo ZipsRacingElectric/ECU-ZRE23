@@ -26,6 +26,7 @@ static VEHICLE_MODES dash_mode = NAW;
 static REGEN_MODE regen_mode = INVALID;
 static uint8_t inverter_fault_clear[8] = {20,0,1,0,0,0,0,0};
 static uint8_t zero_torque_request[8] = {0,0,0,0,1,0, (TORQUE_MAX * 10) & 0xFF, ((TORQUE_MAX * 10) >> 8) & 0xFF};
+static uint8_t prev_dash_message[2] = {0,0};
 
 // acan message handler variables
 static uint16_t apps_1;
@@ -98,6 +99,15 @@ void CAN_Msg_Send(uint16_t id, CAN_DLC dlc, uint8_t *tx_data)
 
 void handle_dash_msg(uint8_t* message_data) 
 {
+    // only run logic if the message data has changed
+    if (message_data[0] == prev_dash_message[0] && message_data[1] == prev_dash_message[1])
+    {
+        return;
+    }
+    
+    prev_dash_message[0] = message_data[0];
+    prev_dash_message[1] = message_data[1];
+    
     is_start_button_pressed = message_data[0] & 0x1;                        // get bit 0 of frame 0
     is_inverter_fault_clear_button_pressed = (message_data[0] >> 1) & 0x1;  // get bit 1 of frame 0
     is_DRS_button_pressed = (message_data[0] >> 2) & 0x1;                   // get bit 2 of frame 0
