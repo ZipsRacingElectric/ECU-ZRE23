@@ -34,6 +34,10 @@ static uint8_t LED_state[1];
 // status message variables
 static uint8_t status_message[CAN_DLC_STATUS];
 
+static uint8_t apps_and_brakes_message[CAN_DLC_AAB];
+
+void send_apps_and_brakes();
+
 // DRS message variable
 static uint8_t DRS_command[CAN_DLC_DRS];
 
@@ -144,6 +148,8 @@ void handle_acan_message(uint8_t* message_data)
     car_data.brake_2    = (message_data[7] << 8) | message_data[6];
     
     car_data.apps_2     = CALC_SCALED_APPS2(car_data.apps_2_raw);
+    
+    send_apps_and_brakes();
 }
 
 void handle_inverter_fault_message(uint8_t* message_data)
@@ -209,4 +215,20 @@ void send_torque_percentage_message()
     torque_percentage_message[0] = car_data.maximum_torque_percent;
     torque_percentage_message[1] = car_data.regen_enabled ? car_data.regen_percent : 0;
     CAN_Msg_Send(CAN_ID_DASH_TORQUE_PERCENTAGE, CAN_DLC_DASH_TORQUE_PERCENTAGE, torque_percentage_message);
+}
+
+void send_apps_and_brakes()
+{
+    apps_and_brakes_message[0] = 0;
+    if(car_data.accelerator_is_pressed)
+    {
+        apps_and_brakes_message[0] |= 0b01;
+    }
+    if(car_data.is_braking)
+    {
+        apps_and_brakes_message[0] |= 0b10;
+    }
+    apps_and_brakes_message[1] = car_data.apps_2  & 0xFF;
+    apps_and_brakes_message[2] = (car_data.apps_2 >> 8) & 0xFF;
+    CAN_Msg_Send(CAN_ID_AAB, CAN_DLC_AAB, apps_and_brakes_message);
 }

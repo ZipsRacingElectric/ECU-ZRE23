@@ -52,8 +52,6 @@ void update_vehicle_mode(VEHICLE_MODES dash_mode)
         default:
             // don't change torque limit if an invalid mode was sent
             break;
-            
-        set_torque_limit(car_data.maximum_torque_percent);
     }
     
     car_data.mode = dash_mode;

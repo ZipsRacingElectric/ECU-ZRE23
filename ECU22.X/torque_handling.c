@@ -12,11 +12,10 @@ static void check_apps_and_brakes_plausibility();
 static void check_25_5_plausibility();
 static void set_brake_state();
 static void set_accelerator_state();
-static void calculate_torque_request();
+int16_t calculate_torque_request();
 
 extern struct Car_Data car_data;
 
-static double scaled_torque_limit = 0;    // stores the maximum torque for the current drive mode
 static double scaled_regen_torque_times_10 = 0;
 
 static const uint16_t APPS1_25_PERCENT = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 4 + APPS1_REAL_MIN;    // used for 25/5 plausibility check
@@ -39,8 +38,6 @@ static volatile bool is_100_ms_plausible = true;
 static uint8_t ACAN_missed_messages = 0;
 
 static uint8_t inverter_cmd_data[8];
-
-static volatile int16_t torque_times_ten;
 
 void initialize_apps_2()
 {
@@ -163,7 +160,13 @@ void send_torque_request()
     // good to send torque request
     if (ACAN_missed_messages <= 5 && car_data.is_25_5_plausible && is_100_ms_plausible && car_data.ready_to_drive)
     {
-        calculate_torque_request();
+        int16_t torque_times_ten = calculate_torque_request();
+        //int16_t torque_times_ten = 0;
+        
+        //if(car_data.apps_1 > 200) {
+        //    torque_times_ten = 115;
+        //}
+        
         inverter_cmd_data[0] = torque_times_ten & 0xFF;         // low order torque request byte
         inverter_cmd_data[1] = (torque_times_ten >> 8) & 0xFF;  // high order torque request byte
         inverter_cmd_data[5] = 0x01;                            // inverter enabled, torque mode, discharge disabled
@@ -189,9 +192,9 @@ void trigger_100_ms_implausibility()
 }
 
 // sets the max torque request to a percentage of the overall max torque
-void set_torque_limit(uint8_t torque_percent)
+double get_torque_limit()
 {
-    scaled_torque_limit = TORQUE_MAX * torque_percent / 100;
+    return TORQUE_MAX * car_data.maximum_torque_percent / 100;
 }
 
 void set_regen_torque(uint8_t torque_percent)
@@ -199,27 +202,24 @@ void set_regen_torque(uint8_t torque_percent)
     scaled_regen_torque_times_10 = REGEN_TORQUE_MAX * torque_percent / 10; // 10 * x/100 = x/10
 }
 
-void calculate_torque_request()
+int16_t calculate_torque_request()
 {
     if (car_data.apps_1 < APPS1_ACCEL_START)
     {
         if (car_data.regen_enabled) 
         {
-            torque_times_ten = -scaled_regen_torque_times_10;   // if you forget to put the negative here, we're gonna have a bad time.
+            return -scaled_regen_torque_times_10;   // if you forget to put the negative here, we're gonna have a bad time.
         }
         else
         {
-            torque_times_ten = 0;
+            return 0;
         }
-        
-        return;
     }
     
     if (car_data.apps_1 > APPS1_WIDE_OPEN_THROTTLE)
     {
-        torque_times_ten = scaled_torque_limit * 10;
-        return;
+        return get_torque_limit() * 10;
     }
     
-    torque_times_ten = scaled_torque_limit * (((double)car_data.apps_1 - APPS1_ACCEL_START) / (APPS1_WIDE_OPEN_THROTTLE - APPS1_ACCEL_START)) * 10.0;
+    return (((double)car_data.apps_1 - APPS1_ACCEL_START) / (APPS1_WIDE_OPEN_THROTTLE - APPS1_ACCEL_START)) * get_torque_limit() * 10.0;
 }

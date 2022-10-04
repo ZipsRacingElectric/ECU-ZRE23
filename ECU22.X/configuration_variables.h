@@ -22,8 +22,8 @@
 #define TORQUE_PERCENT_BEANS     100
 
 
-#define APPS2_OFFSET            0          
-#define APPS2_SCALING_FACTOR    1.1163           
+#define APPS2_OFFSET            -11.465        
+#define APPS2_SCALING_FACTOR    1.564         
 
 #define APPS1_MIN_RANGE			50          //slightly beyond pedal travel, lowest plausible accelerator position, anything lower indicates an error
 #define APPS1_REAL_MIN			80          //end of pedal travel, this is actually what is the pedal reading when it is not pressed
@@ -37,9 +37,9 @@
 #define BRK2_MIN_RANGE          50
 #define BRK2_MAX_RANGE          900
 
-#define BRK1_BRAKING            110         // to turn brake light on
+#define BRK1_BRAKING            126         // to turn brake light on
 #define BRK1_BRAKING_HARD       175         // value of brake input signal when "braking hard" for 25-5 rule
-#define BRK2_BRAKING            110         // to turn brake light on
+#define BRK2_BRAKING            126         // to turn brake light on
 #define BRK2_BRAKING_HARD       175         // value of brake input signal when "braking hard" for 25-5 rule
 
 #define MAX_ACAN_MSG_NOT_RECEIVED_COUNT 5   // how many messages are allowed to be missed before sending 0 torque request
