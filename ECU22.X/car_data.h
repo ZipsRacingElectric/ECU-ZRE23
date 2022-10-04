@@ -26,6 +26,12 @@ struct Car_Data
     bool regen_enabled;
     uint8_t regen_percent;
     volatile VEHICLE_MODES mode;
+    volatile uint16_t apps_1;
+    volatile uint16_t apps_2;
+    volatile uint16_t apps_2_raw;
+    volatile uint16_t brake_1;
+    volatile uint16_t brake_2;
+    volatile bool ACAN_message_received;
     uint16_t lv_battery_voltage;
     uint16_t IMD_resistance;
     uint16_t maximum_torque_percent;

@@ -36,14 +36,7 @@ static uint16_t RAW_APPS2_5_PERCENT;                                            
 static volatile bool is_plausible = true;
 static volatile bool is_100_ms_plausible = true;
 
-static volatile bool message_received = false;
-static uint8_t message_not_received_count = 0;
-
-static volatile uint16_t apps_1;
-static volatile uint16_t raw_apps_2;
-static volatile uint16_t scaled_apps_2;
-static volatile uint16_t brake_1;
-static volatile uint16_t brake_2;
+static uint8_t ACAN_missed_messages = 0;
 
 static uint8_t inverter_cmd_data[8];
 
@@ -67,32 +60,14 @@ void initialize_inverter_cmd_data()
     inverter_cmd_data[7] = ((TORQUE_MAX * 10) >> 8) & 0xFF;     // high order torque limit byte
 }
 
-void set_pedal_position_data(uint16_t new_apps_1, uint16_t new_raw_apps_2, uint16_t new_brake_1, uint16_t new_brake_2)
-{
-    message_received = true;
-    
-    apps_1 = new_apps_1;
-    
-    raw_apps_2 = new_raw_apps_2;
-    scaled_apps_2 = CALC_SCALED_APPS2(new_raw_apps_2);
-
-    brake_1 = new_brake_1;
-    brake_2 = new_brake_2;
-    
-    set_brake_state();
-    set_accelerator_state();
-    check_apps_and_brakes_plausibility();
-    check_25_5_plausibility();
-}
-
 void check_apps_and_brakes_plausibility()
 {
     // the below statement should be true when implausible.
-    if (apps_1 < (scaled_apps_2 - APPS_10PERCENT_PLAUSIBILITY) || apps_1 > (scaled_apps_2 + APPS_10PERCENT_PLAUSIBILITY) // check for 10% Implausibility
-        || apps_1 < APPS1_MIN_RANGE || apps_1 > APPS1_MAX_RANGE             // check for APPS1 out of range
-        || raw_apps_2 < RAW_APPS2_MIN_RANGE || raw_apps_2 > RAW_APPS2_MAX_RANGE     // check for APPS2 out of range
-        || brake_1 < BRK1_MIN_RANGE || brake_1 > BRK1_MAX_RANGE             // check for brake_1 out of range
-        || brake_2 < BRK2_MIN_RANGE || brake_2 > BRK2_MAX_RANGE)            // check for brake_2 out of range
+    if (car_data.apps_1 < (car_data.apps_2 - APPS_10PERCENT_PLAUSIBILITY) || car_data.apps_1 > (car_data.apps_2 + APPS_10PERCENT_PLAUSIBILITY) // check for 10% Implausibility
+        || car_data.apps_1 < APPS1_MIN_RANGE         || car_data.apps_1 > APPS1_MAX_RANGE             // check for APPS1 out of range
+        || car_data.apps_2_raw < RAW_APPS2_MIN_RANGE || car_data.apps_2_raw > RAW_APPS2_MAX_RANGE     // check for APPS2 out of range
+        || car_data.brake_1 < BRK1_MIN_RANGE         || car_data.brake_1 > BRK1_MAX_RANGE             // check for brake_1 out of range
+        || car_data.brake_2 < BRK2_MIN_RANGE         || car_data.brake_2 > BRK2_MAX_RANGE)            // check for brake_2 out of range
     {
         // first implausible reading, start TMR1 which will call trigger_100_ms_implausibility() 
         // if a plausible reading is not received after 100 ms
@@ -116,7 +91,7 @@ void check_apps_and_brakes_plausibility()
 // 25-5 rule check. cut power if accelerator is past 25% and braking hard
 void check_25_5_plausibility()
 {
-    if((brake_1 > BRK1_BRAKING_HARD || brake_2 > BRK2_BRAKING_HARD) && (apps_1 > APPS1_25_PERCENT || raw_apps_2 > RAW_APPS2_25_PERCENT))
+    if((car_data.brake_1 > BRK1_BRAKING_HARD || car_data.brake_2 > BRK2_BRAKING_HARD) && (car_data.apps_1 > APPS1_25_PERCENT || car_data.apps_2_raw > RAW_APPS2_25_PERCENT))
     {
         car_data.is_25_5_plausible = false;
         
@@ -125,7 +100,7 @@ void check_25_5_plausibility()
     }
     
     // allow torque requests when APPSs go below 5% throttle
-    if(apps_1 < APPS1_5_PERCENT && raw_apps_2 < RAW_APPS2_5_PERCENT)
+    if(car_data.apps_1 < APPS1_5_PERCENT && car_data.apps_2_raw < RAW_APPS2_5_PERCENT)
     {
         car_data.is_25_5_plausible = true;
         
@@ -136,7 +111,7 @@ void check_25_5_plausibility()
 
 void set_brake_state()
 {
-    if (brake_1 > BRK1_BRAKING || brake_2 > BRK2_BRAKING)
+    if (car_data.brake_1 > BRK1_BRAKING || car_data.brake_2 > BRK2_BRAKING)
     {
         car_data.is_braking = true;
         if (car_data.DRS_enabled)
@@ -155,7 +130,7 @@ void set_brake_state()
 
 void set_accelerator_state()
 {
-    if (apps_1 > APPS1_ACCEL_START || raw_apps_2 > RAW_APPS2_ACCEL_START)
+    if (car_data.apps_1 > APPS1_ACCEL_START || car_data.apps_2_raw > RAW_APPS2_ACCEL_START)
     {
         car_data.accelerator_is_pressed = true;
     }
@@ -168,20 +143,25 @@ void set_accelerator_state()
 // inverter heartbeat message. called every 20 ms by timer 2
 void send_torque_request()
 {
+    set_brake_state();
+    set_accelerator_state();
+    check_apps_and_brakes_plausibility();
+    check_25_5_plausibility();
+    
     // check if our data is stale (no new message from the ACAN board)
     // check if a new message has been received since last torque_request call
-    if (!message_received)
+    if (!car_data.ACAN_message_received)
     {
-        ++message_not_received_count;
+        ++ACAN_missed_messages;
     }
     else
     {
-        message_not_received_count = 0;
-        message_received = !message_received;
+        ACAN_missed_messages = 0;
+        car_data.ACAN_message_received = false;
     }
     
     // good to send torque request
-    if (message_not_received_count <= 5 && car_data.is_25_5_plausible && is_100_ms_plausible && car_data.ready_to_drive)
+    if (ACAN_missed_messages <= 5 && car_data.is_25_5_plausible && is_100_ms_plausible && car_data.ready_to_drive)
     {
         calculate_torque_request();
         inverter_cmd_data[0] = torque_times_ten & 0xFF;         // low order torque request byte
@@ -221,7 +201,7 @@ void set_regen_torque(uint8_t torque_percent)
 
 void calculate_torque_request()
 {
-    if (apps_1 < APPS1_ACCEL_START)
+    if (car_data.apps_1 < APPS1_ACCEL_START)
     {
         if (car_data.regen_enabled) 
         {
@@ -235,11 +215,11 @@ void calculate_torque_request()
         return;
     }
     
-    if (apps_1 > APPS1_WIDE_OPEN_THROTTLE)
+    if (car_data.apps_1 > APPS1_WIDE_OPEN_THROTTLE)
     {
         torque_times_ten = scaled_torque_limit * 10;
         return;
     }
     
-    torque_times_ten = scaled_torque_limit * (((double)apps_1 - APPS1_ACCEL_START) / (APPS1_WIDE_OPEN_THROTTLE - APPS1_ACCEL_START)) * 10.0;
+    torque_times_ten = scaled_torque_limit * (((double)car_data.apps_1 - APPS1_ACCEL_START) / (APPS1_WIDE_OPEN_THROTTLE - APPS1_ACCEL_START)) * 10.0;
 }

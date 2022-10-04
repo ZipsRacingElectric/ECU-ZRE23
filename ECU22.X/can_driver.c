@@ -28,12 +28,6 @@ static uint8_t inverter_fault_clear[8] = {20,0,1,0,0,0,0,0};
 static uint8_t zero_torque_request[8] = {0,0,0,0,1,0, (TORQUE_MAX * 10) & 0xFF, ((TORQUE_MAX * 10) >> 8) & 0xFF};
 static uint8_t prev_dash_message[2] = {0,0};
 
-// acan message handler variables
-static uint16_t apps_1;
-static uint16_t raw_apps_2;
-static uint16_t brake_1;
-static uint16_t brake_2;
-
 // dash led indicator variables
 static uint8_t LED_state[1];
 
@@ -116,7 +110,7 @@ void handle_dash_msg(uint8_t* message_data)
     regen_mode = message_data[1] & 0b111;                                // get bits 0, 1, and 2 of frame 1
 
     update_vehicle_mode(dash_mode);
-    update_regen_torque_mode(regen_mode);
+    //update_regen_torque_mode(regen_mode);
     
     if (is_DRS_button_pressed && !car_data.is_braking)
     {
@@ -142,15 +136,14 @@ void handle_dash_msg(uint8_t* message_data)
 
 void handle_acan_message(uint8_t* message_data)
 {
-    apps_1 = (message_data[1] << 8) | message_data[0];
+    car_data.ACAN_message_received = true;
     
-    raw_apps_2 = (message_data[3] << 8) | message_data[2];
-
+    car_data.apps_1     = (message_data[1] << 8) | message_data[0];
+    car_data.apps_2_raw = (message_data[3] << 8) | message_data[2];
+    car_data.brake_1    = (message_data[5] << 8) | message_data[4];
+    car_data.brake_2    = (message_data[7] << 8) | message_data[6];
     
-    brake_1 = (message_data[5] << 8) | message_data[4];
-    brake_2 = (message_data[7] << 8) | message_data[6];
-    
-    set_pedal_position_data(apps_1, raw_apps_2, brake_1, brake_2);
+    car_data.apps_2     = CALC_SCALED_APPS2(car_data.apps_2_raw);
 }
 
 void handle_inverter_fault_message(uint8_t* message_data)

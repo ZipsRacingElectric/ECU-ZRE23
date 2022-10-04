@@ -7,6 +7,11 @@ volatile struct Car_Data car_data;
 void initialize_car_data()
 {
     car_data.mode = NAW;
+    car_data.apps_1 = 0;
+    car_data.apps_2 = 0;
+    car_data.apps_2_raw = 0;
+    car_data.brake_1 = 0;
+    car_data.brake_2 = 0;
     car_data.maximum_torque_percent = 0;
     car_data.regen_percent = 0;
     car_data.is_braking = false;
