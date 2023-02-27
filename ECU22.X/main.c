@@ -1,54 +1,69 @@
-#include "mcc_generated_files/system.h"
-#include "mcc_generated_files/pin_manager.h"
-#include "car_data.h"
+// Primative Libraries
+#include <stdint.h>
+#include <stdbool.h>
+
+// Constants
 #include "global_constants.h"
 #include "macros.h"
+
+// Libraries
+#include <libpic30.h>
+
+#include "mcc_generated_files/system.h"
+#include "mcc_generated_files/pin_manager.h"
 #include "mcc_generated_files/tmr1.h"
+
+#include "ADC_driver.h"
+
+// Includes
 #include "timer_interrupts.h"
 #include "can_driver.h"
 #include "torque_handling.h"
-#include "mcc_generated_files/adc1.h"
-#include "ADC_driver.h"
-#include "on_change_interrupts.h"
-#include "car_data.h"
-#include <libpic30.h>        // __delayXXX() functions
+#include "state_manager.h"
 
 int main(void)
 {
-    // initialize the device
-
+    // MCC Initializations
     SYSTEM_Initialize();
-    CAN_Initialize();
-    initialize_apps_2();
-    initialize_timers();
-    initialize_car_data();
-    initialize_change_notification_interrupts();
-    initialize_inverter_cmd_data();
-    initialize_ADC();
-
-    HV_CTRL_SetHigh(); // allow high voltage to be used
- 
-    static uint16_t counter = 99;
     
-    extern struct Car_Data car_data;
+    // Initializations
+    initialize_CAN_driver();
+    initialize_timer_interrupts();
+    initialize_state_manager();
+    initialize_ADC();
+    initialize_torque_handler();
 
-    while (1)
-    {      
+    // Allow Tractive Systems to Engage
+    HV_CTRL_SetHigh();
+ 
+    static uint16_t update_counter = 99;
+ 
+    // Heartbeat Loop
+    while(true)
+    {
+        // Period of 100ms
         __delay_ms(100);
-        ++counter;
+        ++update_counter;
         
-        // trigger ADC every 10 seconds
-        if (counter == 100)
+        // Execute Every 10s
+        if (update_counter == 100)
         {
-            car_data.lv_battery_voltage = get_ADC_channel_reading(LV_BATTERY_VOLTAGE);
+            // Read LV-Battery Voltage
+            car_state.lv_battery_voltage = get_ADC_value(LV_BATTERY_VOLTAGE);
+            
+            // Delay between ADC Readings
             __delay_us(1);
-            car_data.IMD_resistance = get_ADC_channel_reading(IMD_RESISTANCE);
             
-            send_status_message();
+            // Read IMD Resistance
+            car_state.imd_resistance = get_ADC_value(IMD_RESISTANCE);
             
-            counter = 0;
+            update_counter = 0;
         }
+        
+        // Toggle Heartbeat LED
         LED4_Toggle();
     }
+    
+    // On Exit, Return Error Code 1
     return 1; 
 }

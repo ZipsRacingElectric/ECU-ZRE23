@@ -1,43 +1,53 @@
+// Header
 #include "timer_interrupts.h"
-#include "torque_handling.h"
-#include "indicator_driver.h"
-#include "state_manager.h"
-#include "can_driver.h"
+
+// Libraries
 #include "mcc_generated_files/tmr1.h"
 #include "mcc_generated_files/tmr2.h"
 #include "mcc_generated_files/tmr3.h"
 #include "mcc_generated_files/tmr4.h"
 
-static uint16_t counter = 0;
+// Includes
+#include "torque_handling.h"
+#include "indicator_driver.h"
+#include "state_manager.h"
+#include "can_driver.h"
 
-// called every 20 ms
-static void twenty_ms_interrupt_service()
+static uint16_t update_20ms_counter = 0;
+
+static void interrupt_20ms_service()
 {
-    // run every 20 ms
+    // Executes every 20ms
+    get_pedal_values();
+    set_brake_state();
+    set_accelerator_state();
     send_torque_request();
-    send_DRS_command();
     
-    // run every 100 ms
-    if (counter % 5 == 0)
+    // Execute every 100ms
+    if(update_20ms_counter % 5 == 0)
     {
-        send_LED_indicator_state();
-        send_torque_percentage_message();
+        send_pedal_messages();
     }
     
-    counter == 10000 ? counter = 0 : ++counter;
+    // Increment Counter. Prevent Overflow 
+    if(update_20ms_counter == 10000) update_20ms_counter = 0;
+    else ++update_20ms_counter;
 }
 
-void initialize_timers()
+void initialize_timer_interrupts()
 {
+    // Reset Timers
     TMR1_Stop();
-    TMR2_Start();
+    TMR2_Stop();
     TMR3_Stop();
     TMR4_Stop();
 
-    // control + click on the function parameters to go to the function definitions :)
-    
-    TMR1_SetInterruptHandler(trigger_100_ms_implausibility);    
-    TMR2_SetInterruptHandler(twenty_ms_interrupt_service);
+    // Set Interrupts
+    TMR1_SetInterruptHandler(set_pedal_100_ms_implausible);    
+    TMR2_SetInterruptHandler(interrupt_20ms_service);
     TMR3_SetInterruptHandler(end_RTD_buzzer);
     TMR4_SetInterruptHandler(exit_ready_to_drive);
+    
+    // Start 20ms Interrupt
+    TMR2_Start();
 }

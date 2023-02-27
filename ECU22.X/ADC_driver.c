@@ -1,14 +1,18 @@
+// Header
 #include "ADC_driver.h"
-#include "mcc_generated_files/adc1.h"
+
+// Constants
 #include "global_constants.h"
-#include <libpic30.h>        // __delayXXX() functions
+
+// Libraries
+#include <libpic30.h>
 
 void initialize_ADC()
 {
     ADC1_Enable();
 }
 
-uint16_t get_ADC_channel_reading(ADC1_CHANNEL channel)
+uint16_t get_ADC_value(ADC1_CHANNEL channel)
 {
     ADC1_ChannelSelect(channel);
     ADC1_SoftwareTriggerEnable();

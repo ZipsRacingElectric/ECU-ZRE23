@@ -1,50 +1,40 @@
-/* 
- * File:   configuration_variables.h
- * Author: Derek Dunn
- * Description: This file defines global constants that are reconfigured when tuning systems. ex: APPS plausibility 
- * Created on September 13, 2021, 6:48 PM
- */
+// Configuration Variables
+//   Author: Derek Dunn
+//   Created: 21.09.13
+//   Updated: 23.02.16
+//   Description: This file defines global constants that are reconfigured when tuning systems. ex: APPS plausibility 
 
 #ifndef CONFIGURATION_VARIABLES_H
 #define	CONFIGURATION_VARIABLES_H
 
-//TODO: calibrate all variables in this file
+// Pedal Mappings -----------------------------------------------------------------------------
+#define APPS_ABS_MIN                    -5          // APPS Absolute Minimum Percentage
+#define APPS_REGEN_START                2           // APPS Regen Start Percentage
+#define APPS_THROTTLE_START             10          // APPS Throttle Start / Regen End Percentage
+#define APPS_THROTTLE_END               90          // APPS Throttle End Percentage
+#define APPS_ABS_MAX                    105         // APPS Absolute Maximum Percentage5
 
-#define TORQUE_MAX               230        // maximum torque allowed to be requested in newton-meters
-#define REGEN_TORQUE_MAX         230        // maximum regen torque allowed to be requested in newton-meters
+#define BRAKES_ABS_MIN                  -5          // Brake Absolute Minimum Percentage
+#define BRAKES_REGEN_START              2           // Brake Regen Start Percentage
+#define BRAKES_BRAKE_START              5           // Brake Brake Light Start Percentage
+#define BRAKES_REGEN_END                20          // Brake Regen End Percentage
+#define BRAKES_BRAKE_HARD               60          // Brake Hard Braking Percentage
+#define BRAKES_ABS_MAX                  105         // Brake Absolute Maximum Percentage
 
-#define TORQUE_PERCENT_DEBUG     5
-#define TORQUE_PERCENT_DAN       10
-#define TORQUE_PERCENT_SKIDPAD   20
-#define TORQUE_PERCENT_ENDURANCE 30
-#define TORQUE_PERCENT_AUTOCROSS 40
-#define TORQUE_PERCENT_ACCEL     50
-#define TORQUE_PERCENT_BEANS     100
+// Torque Values ------------------------------------------------------------------------------
+#define TORQUE_MAX                      230         // Maximum Requestable Torque
+#define REGEN_TORQUE_MAX                230         // Maximum Requestable Regen Torque
+#define REGEN_COASTING_PERCENT          10          // Percent of Regen applied when Coasting
 
-
-#define APPS2_OFFSET            -11.465        
-#define APPS2_SCALING_FACTOR    1.564         
-
-#define APPS1_MIN_RANGE			50          //slightly beyond pedal travel, lowest plausible accelerator position, anything lower indicates an error
-#define APPS1_REAL_MIN			80          //end of pedal travel, this is actually what is the pedal reading when it is not pressed
-#define APPS1_ACCEL_START 		100         //this is where the ECU begins to request torque
-#define APPS1_WIDE_OPEN_THROTTLE 380        //point for wide open throttle
-#define APPS1_REAL_MAX			410         //end of actual pedal travel, this is actually what is the pedal reading when it is fully pressed
-#define APPS1_MAX_RANGE 		440         //slightly beyond pedal travel, highest plausible accelerator position, anything higher indicates an error
-
-#define BRK1_MIN_RANGE          50          // brakes outside these ranges = fault condition
-#define BRK1_MAX_RANGE          900
-#define BRK2_MIN_RANGE          50
-#define BRK2_MAX_RANGE          900
-
-#define BRK1_BRAKING            126         // to turn brake light on
-#define BRK1_BRAKING_HARD       175         // value of brake input signal when "braking hard" for 25-5 rule
-#define BRK2_BRAKING            126         // to turn brake light on
-#define BRK2_BRAKING_HARD       175         // value of brake input signal when "braking hard" for 25-5 rule
-
-#define MAX_ACAN_MSG_NOT_RECEIVED_COUNT 5   // how many messages are allowed to be missed before sending 0 torque request
+#define APPS1_DEFAULT_REAL_MIN          80
+#define APPS1_DEFAULT_REAL_MAX          410
+#define APPS2_DEFAULT_REAL_MIN          80
+#define APPS2_DEFAULT_REAL_MAX          410
+#define BRAKE1_DEFAULT_REAL_MIN         55
+#define BRAKE1_DEFAULT_REAL_MAX         895
+#define BRAKE2_DEFAULT_REAL_MIN         55
+#define BRAKE2_DEFAULT_REAL_MAX         895
 
 #define LOW_LV_VAL 609  //12 V on the battery is divided down to 2.976 V, ADC produces ~609
 
-#endif	/* CONFIGURATION_VARIABLES_H */
-
+#endif // CONFIGURATION_VARIABLES_H

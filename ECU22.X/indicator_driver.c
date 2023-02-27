@@ -2,7 +2,7 @@
 #include "mcc_generated_files/pin_manager.h"
 #include "mcc_generated_files/tmr3.h"
 
-//TODO: put dash LED indicator logic in here
+//TODO: MERGE with state manager ??
 
 static int buzz_cycles = 7;
 static int buzz_cycle_count = 0;

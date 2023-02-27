@@ -1,225 +1,353 @@
-#include <stdbool.h>
-#include "mcc_generated_files/pin_manager.h"
-#include "global_constants.h"
+// Header
 #include "torque_handling.h"
-#include "configuration_variables.h"
-#include "mcc_generated_files/tmr1.h"
-#include "car_data.h"
-#include "can_driver.h"
-#include "mcc_generated_files/adc1.h" // TODO: figure out this circular reference
 
-static void check_apps_and_brakes_plausibility();
-static void check_25_5_plausibility();
-static void set_brake_state();
-static void set_accelerator_state();
+// Libraries
+#include "mcc_generated_files/pin_manager.h"
+#include "mcc_generated_files/tmr1.h"
+
+// Constants
+#include "global_constants.h"
+#include "configuration_variables.h"
+
+// Includes
+#include "can_driver.h"
+#include "state_manager.h"
+#include "ADC_driver.h"
+
+// Functions ----------------------------------------------------------------------------------
+// Check Torque Plausibility
+// - Call to check the plausibility of the Torque message
+// - Writes plausibility to car_state
+static void check_torque_plausibility();
+
+// Check Pedal Plausibility
+// - Call to check the plausibility of the Pedal values
+// - Writes plausibility to car_state
+static void check_pedal_plausibility();
+
+// Check APPS 25/5 Plausibility
+// - Call to check the plausibility of the APPS based on the 25/5 Rule
+// - Writes plausibility to car_state
+static void check_apps_25_5_plausibility();
+
+// Calculate Torque Request
+// - Call to get the requested torque
+// - Returns the Torque x10
 int16_t calculate_torque_request();
 
-extern struct Car_Data car_data;
+// Global Data --------------------------------------------------------------------------------
+uint16_t torque_limit = 0;
+uint16_t regen_limit  = 0;
 
-static double scaled_regen_torque_times_10 = 0;
-
-static const uint16_t APPS1_25_PERCENT = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 4 + APPS1_REAL_MIN;    // used for 25/5 plausibility check
-static const uint16_t APPS1_5_PERCENT = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 20 + APPS1_REAL_MIN;    // used for 25/5 plausibility check
-
-static const uint16_t APPS_10PERCENT_PLAUSIBILITY = (APPS1_REAL_MAX - APPS1_REAL_MIN) / 10;
-
-static const uint16_t RAW_APPS2_MIN_RANGE = CALC_APPS2_FROM_APPS1(APPS1_MIN_RANGE);         // lowest plausible accelerator position, anything lower indicates an error
-static const uint16_t RAW_APPS2_REAL_MIN = CALC_APPS2_FROM_APPS1(APPS1_REAL_MIN);           // this is actually what the pedal reading is when it is not pressed
-static const uint16_t RAW_APPS2_ACCEL_START = CALC_APPS2_FROM_APPS1(APPS1_ACCEL_START);     // this is where the ECU begins to request torque
-static const uint16_t RAW_APPS2_WIDE_OPEN_THROTTLE = CALC_APPS2_FROM_APPS1(APPS1_WIDE_OPEN_THROTTLE);  // point for wide open throttle
-static const uint16_t RAW_APPS2_REAL_MAX = CALC_APPS2_FROM_APPS1(APPS1_REAL_MAX);           // this is actually what is the pedal reading when it is fully pressed
-static const uint16_t RAW_APPS2_MAX_RANGE = CALC_APPS2_FROM_APPS1(APPS1_MAX_RANGE);         // highest plausible accelerator position, anything higher indicates an error
-static uint16_t RAW_APPS2_25_PERCENT;                                                       // used for 25/5 plausibility check
-static uint16_t RAW_APPS2_5_PERCENT;                                                        // used for 25/5 plausibility check
-
-static volatile bool is_plausible = true;
-static volatile bool is_100_ms_plausible = true;
-
-static uint8_t ACAN_missed_messages = 0;
-
-static uint8_t inverter_cmd_data[8];
-
-void initialize_apps_2()
+volatile struct apps_map apps1 =
 {
-    RAW_APPS2_25_PERCENT = (RAW_APPS2_REAL_MAX - RAW_APPS2_REAL_MIN) / 4 + RAW_APPS2_REAL_MIN;
-    RAW_APPS2_5_PERCENT = (RAW_APPS2_REAL_MAX - RAW_APPS2_REAL_MIN) / 20 + RAW_APPS2_REAL_MIN;
+    .value          = 0,
+    .real_min       = APPS1_DEFAULT_REAL_MIN,
+    .real_max       = APPS1_DEFAULT_REAL_MAX
+};
+
+volatile struct apps_map apps2 =
+{
+    .value          = 0,
+    .real_min       = APPS2_DEFAULT_REAL_MIN,
+    .real_max       = APPS2_DEFAULT_REAL_MAX
+};
+
+volatile struct brake_map brake1 =
+{
+    .value       = 0,
+    .real_min    = BRAKE1_DEFAULT_REAL_MIN,
+    .real_max    = BRAKE1_DEFAULT_REAL_MAX
+};
+
+volatile struct brake_map brake2 =
+{
+    .value       = 0,
+    .real_min    = BRAKE2_DEFAULT_REAL_MIN,
+    .real_max    = BRAKE2_DEFAULT_REAL_MAX
+};
+
+// Initializers -------------------------------------------------------------------------------
+void initialize_torque_handler()
+{
+    set_apps_mapping();
+    set_brake_mapping();
 }
 
-void initialize_inverter_cmd_data()
+// Pedal Mapping ------------------------------------------------------------------------------
+void set_apps_mapping()
 {
-    inverter_cmd_data[0] = 0;   // low order torque request byte
-    inverter_cmd_data[1] = 0;   // high order torque request byte
-    inverter_cmd_data[2] = 0;   // low order speed request byte (unused)
-    inverter_cmd_data[3] = 0;   // high order speed request byte (unused)
-    inverter_cmd_data[4] = 1;   // Boolean direction bit. 1 = forward, 0 = reverse
-    inverter_cmd_data[5] = 0;   // 5.0: inverter enable, 0 for off. 5.1: discharge by sending current through motor (not used), 0 for disable. 5.2: 0 for torque mode
-    inverter_cmd_data[6] = (TORQUE_MAX * 10) & 0xFF;            // low order torque limit byte
-    inverter_cmd_data[7] = ((TORQUE_MAX * 10) >> 8) & 0xFF;     // high order torque limit byte
+    // Invalidate Current Values.
+    apps1.value = 0;
+    apps2.value = 0;
+    car_state.apps_calibration_plausible = false;
+    
+    // Calculate APPS-1 Values from Percentages
+    //                  9-bit = (10-bit         - 10-bit        ) / 2-bit
+    uint16_t apps1_range_half = (apps1.real_max - apps1.real_min) >> 1;
+    
+    //                     9-bit            *  7-bit                       / 6-bit - 10-bit
+    apps1.abs_min        = apps1_range_half * (APPS_ABS_MIN        & 0x7F) / 50    - apps1.real_min;
+    apps1.throttle_start = apps1_range_half * (APPS_THROTTLE_START & 0x7F) / 50    - apps1.real_min;
+    apps1.throttle_end   = apps1_range_half * (APPS_THROTTLE_END   & 0x7F) / 50    - apps1.real_min;
+    apps1.abs_max        = apps1_range_half * (APPS_ABS_MAX        & 0x7F) / 50    - apps1.real_min;
+    //                     (9-bit         * 1-bit) / 5-bit - 10-bit
+    apps1.percent_05     = (apps1_range_half << 1) / 20    - apps1.real_min;
+    apps1.percent_10     = (apps1_range_half << 1) / 10    - apps1.real_min;
+    apps1.percent_25     = (apps1_range_half << 1) / 4     - apps1.real_min;
+    
+    // Calculate APPS-2 Values from Percentages
+    //                  9-bit = (10-bit         - 10-bit        ) / 2-bit
+    uint16_t apps2_range_half = (apps2.real_max - apps2.real_min) >> 1;
+    
+    //                     9-bit            *  7-bit                       / 6-bit - 10-bit
+    apps2.abs_min        = apps2_range_half * (APPS_ABS_MIN        & 0x7F) / 50    - apps2.real_min;
+    apps2.throttle_start = apps2_range_half * (APPS_THROTTLE_START & 0x7F) / 50    - apps2.real_min;
+    apps2.throttle_end   = apps2_range_half * (APPS_THROTTLE_END   & 0x7F) / 50    - apps2.real_min;
+    apps2.abs_max        = apps2_range_half * (APPS_ABS_MAX        & 0x7F) / 50    - apps2.real_min;
+    //                     (9-bit         * 1-bit) / 5-bit - 10-bit
+    apps2.percent_05     = (apps2_range_half << 1)  / 20    - apps2.real_min;
+    apps2.percent_10     = (apps2_range_half << 1)  / 10    - apps2.real_min;
+    apps2.percent_25     = (apps2_range_half << 1)  / 4     - apps2.real_min;
+    
+    // Check Plausibility
+    car_state.apps_calibration_plausible = true;
+    
+    car_state.apps_calibration_plausible &= apps1.real_min < apps1.real_max;
+    car_state.apps_calibration_plausible &= apps2.real_min < apps2.real_max;
+    
+    car_state.apps_calibration_plausible &= apps1.abs_min < apps1.real_min;
+    car_state.apps_calibration_plausible &= apps2.abs_min < apps2.real_min;
+    car_state.apps_calibration_plausible &= apps1.abs_max > apps1.real_max;
+    car_state.apps_calibration_plausible &= apps2.abs_max > apps2.real_max;
 }
 
-void check_apps_and_brakes_plausibility()
+void set_brake_mapping()
 {
-    // the below statement should be true when implausible.
-    if (car_data.apps_1 < (car_data.apps_2 - APPS_10PERCENT_PLAUSIBILITY) || car_data.apps_1 > (car_data.apps_2 + APPS_10PERCENT_PLAUSIBILITY) // check for 10% Implausibility
-        || car_data.apps_1 < APPS1_MIN_RANGE         || car_data.apps_1 > APPS1_MAX_RANGE             // check for APPS1 out of range
-        || car_data.apps_2_raw < RAW_APPS2_MIN_RANGE || car_data.apps_2_raw > RAW_APPS2_MAX_RANGE     // check for APPS2 out of range
-        || car_data.brake_1 < BRK1_MIN_RANGE         || car_data.brake_1 > BRK1_MAX_RANGE             // check for brake_1 out of range
-        || car_data.brake_2 < BRK2_MIN_RANGE         || car_data.brake_2 > BRK2_MAX_RANGE)            // check for brake_2 out of range
+    // Invalidate Current Values.
+    brake1.value = 0;
+    brake2.value = 0;
+    car_state.brakes_calibration_plausible = false;
+    
+    // Calculate Brake-1 Values from Percentages
+    //                   9-bit = (10-bit          - 10-bit         ) / 2-bit
+    uint16_t brake1_range_half = (brake1.real_max - brake1.real_min) >> 1;
+    
+    //                   9-bit             *  7-bit                      / 6-bit - 10-bit
+    brake1.abs_min     = brake1_range_half * (BRAKES_ABS_MIN     & 0x7F) / 50    - brake1.real_min;
+    brake1.regen_start = brake1_range_half * (BRAKES_REGEN_START & 0x7F) / 50    - brake1.real_min;
+    brake1.brake_start = brake1_range_half * (BRAKES_BRAKE_START & 0x7F) / 50    - brake1.real_min;
+    brake1.regen_end   = brake1_range_half * (BRAKES_REGEN_END   & 0x7F) / 50    - brake1.real_min;
+    brake1.brake_hard  = brake1_range_half * (BRAKES_BRAKE_HARD  & 0x7F) / 50    - brake1.real_min;
+    brake1.abs_max     = brake1_range_half * (BRAKES_ABS_MAX     & 0x7F) / 50    - brake1.real_min;
+    
+    // Calculate Brake-2 Values from Percentages
+    //                   9-bit = (10-bit          - 10-bit         ) / 2-bit
+    uint16_t brake2_range_half = (brake2.real_max - brake2.real_min) >> 1;
+    
+    //                   9-bit             *  7-bit                      / 6-bit - 10-bit
+    brake2.abs_min     = brake2_range_half * (BRAKES_ABS_MIN     & 0x7F) / 50    - brake2.real_min;
+    brake2.regen_start = brake2_range_half * (BRAKES_REGEN_START & 0x7F) / 50    - brake2.real_min;
+    brake2.brake_start = brake2_range_half * (BRAKES_BRAKE_START & 0x7F) / 50    - brake2.real_min;
+    brake2.regen_end   = brake2_range_half * (BRAKES_REGEN_END   & 0x7F) / 50    - brake2.real_min;
+    brake2.brake_hard  = brake2_range_half * (BRAKES_BRAKE_HARD  & 0x7F) / 50    - brake2.real_min;
+    brake2.abs_max     = brake2_range_half * (BRAKES_ABS_MAX     & 0x7F) / 50    - brake2.real_min;
+    
+    // Check Plausibility
+    car_state.brakes_calibration_plausible = true;
+    
+    car_state.brakes_calibration_plausible &= brake1.real_min < brake1.real_max;
+    car_state.brakes_calibration_plausible &= brake2.real_min < brake2.real_max;
+    
+    car_state.brakes_calibration_plausible &= brake1.abs_min < brake1.real_min;
+    car_state.brakes_calibration_plausible &= brake2.abs_min < brake2.real_min;
+    car_state.brakes_calibration_plausible &= brake1.abs_max > brake1.real_max;
+    car_state.brakes_calibration_plausible &= brake2.abs_max > brake2.real_max;
+}
+
+// Plausibility Checks ------------------------------------------------------------------------
+void check_torque_plausibility()
+{
+    check_pedal_plausibility();
+    check_apps_25_5_plausibility();
+    
+    car_state.torque_plausible = true;
+    
+    car_state.torque_plausible &= car_state.high_voltage_enabled;
+    car_state.torque_plausible &= car_state.ready_to_drive;
+    
+    car_state.torque_plausible &= car_state.pedals_100ms_plausible;
+    car_state.torque_plausible &= car_state.apps_25_5_plausible;
+    car_state.torque_plausible &= car_state.apps_calibration_plausible;
+    car_state.torque_plausible &= car_state.brakes_calibration_plausible;
+}
+
+void check_pedal_plausibility()
+{
+    car_state.apps_plausible   = true;
+    car_state.brakes_plausible = true;
+    
+    // Check APPS-1 is in range
+    car_state.apps_plausible &= apps1.value < apps1.abs_max;
+    car_state.apps_plausible &= apps1.value > apps1.abs_min;
+    
+    // Check APPS-2 is in range
+    car_state.apps_plausible &= apps2.value < apps2.abs_max;
+    car_state.apps_plausible &= apps2.value > apps2.abs_min;
+    
+    // Check APPS-2 is within 10% of APPS-1
+    car_state.apps_plausible &= apps2.value < apps1.value + (apps1.percent_10 - apps1.real_min);
+    car_state.apps_plausible &= apps2.value > apps1.value - (apps1.percent_10 - apps1.real_min);
+
+    // Check Brake-1 is in range
+    car_state.brakes_plausible &= brake1.value < brake1.abs_max;
+    car_state.brakes_plausible &= brake1.value > brake1.abs_min;
+    
+    // Check Brake-2 is in range
+    car_state.brakes_plausible &= brake1.value < brake1.abs_max;
+    car_state.brakes_plausible &= brake1.value > brake1.abs_min;
+    
+    // Check Plausibility State
+    if(car_state.apps_plausible && car_state.brakes_plausible)
     {
-        // first implausible reading, start TMR1 which will call trigger_100_ms_implausibility() 
-        // if a plausible reading is not received after 100 ms
-        if (is_plausible)
-        {
-            is_plausible = false;
-            TMR1_Counter16BitSet(0x00);
-            TMR1_Start();
-        }
-    }
-    else
-    {
-        is_plausible = true;
-        is_100_ms_plausible = true;
+        // Pedals are Plausible
+        car_state.pedals_plausible = true;
+        car_state.pedals_100ms_plausible = true;
+        // Stop Timer 1
         TMR1_Stop();
         LED3_SetHigh();
         LED2_SetLow();
     }
+    else
+    {
+        // Pedals are Implausible
+        if(!car_state.pedals_plausible) return;
+        
+        // Start Timer 1 to trigger 100ms Implausibility
+        car_state.pedals_plausible = false;
+        TMR1_Counter16BitSet(0x00);
+        TMR1_Start();
+    }
 }
 
-// 25-5 rule check. cut power if accelerator is past 25% and braking hard
-void check_25_5_plausibility()
+void check_apps_25_5_plausibility()
 {
-    if((car_data.brake_1 > BRK1_BRAKING_HARD || car_data.brake_2 > BRK2_BRAKING_HARD) && (car_data.apps_1 > APPS1_25_PERCENT || car_data.apps_2_raw > RAW_APPS2_25_PERCENT))
+    bool braking_hard = brake1.value > brake1.brake_hard || brake2.value > brake2.brake_hard;
+    bool throttle_25_percent = apps1.value > apps1.percent_25 || apps2.value > apps2.percent_25;
+    bool throttle_05_percent = apps1.value < apps1.percent_05 && apps2.value < apps2.percent_05;
+    
+    // Set 25/5 Implausible
+    if(braking_hard && throttle_25_percent)
     {
-        car_data.is_25_5_plausible = false;
+        car_state.apps_25_5_plausible = false;
         
         LED3_SetLow();
         LED2_SetHigh();
     }
     
-    // allow torque requests when APPSs go below 5% throttle
-    if(car_data.apps_1 < APPS1_5_PERCENT && car_data.apps_2_raw < RAW_APPS2_5_PERCENT)
+    // Reset Plausibility
+    if(throttle_05_percent)
     {
-        car_data.is_25_5_plausible = true;
+        car_state.apps_25_5_plausible = true;
         
         LED3_SetHigh();
         LED2_SetLow();
     }
 }
 
-void set_brake_state()
+void set_pedal_100_ms_implausible()
 {
-    if (car_data.brake_1 > BRK1_BRAKING || car_data.brake_2 > BRK2_BRAKING)
-    {
-        car_data.is_braking = true;
-        if (car_data.DRS_enabled)
-        {
-            car_data.DRS_enabled = false;
-        }
-        
-        BRK_CTRL_SetHigh();
-    }
-    else
-    {
-        car_data.is_braking = false;
-        BRK_CTRL_SetLow();
-    }
-}
-
-void set_accelerator_state()
-{
-    if (car_data.apps_1 > APPS1_ACCEL_START || car_data.apps_2_raw > RAW_APPS2_ACCEL_START)
-    {
-        car_data.accelerator_is_pressed = true;
-    }
-    else
-    {
-        car_data.accelerator_is_pressed = false;
-    }
-}
-
-// inverter heartbeat message. called every 20 ms by timer 2
-void send_torque_request()
-{
-    set_brake_state();
-    set_accelerator_state();
-    check_apps_and_brakes_plausibility();
-    check_25_5_plausibility();
-    
-    // check if our data is stale (no new message from the ACAN board)
-    // check if a new message has been received since last torque_request call
-    if (!car_data.ACAN_message_received)
-    {
-        ++ACAN_missed_messages;
-    }
-    else
-    {
-        ACAN_missed_messages = 0;
-        car_data.ACAN_message_received = false;
-    }
-    
-    // good to send torque request
-    if (ACAN_missed_messages <= 5 && car_data.is_25_5_plausible && is_100_ms_plausible && car_data.ready_to_drive)
-    {
-        int16_t torque_times_ten = calculate_torque_request();
-        //int16_t torque_times_ten = 0;
-        
-        //if(car_data.apps_1 > 200) {
-        //    torque_times_ten = 115;
-        //}
-        
-        inverter_cmd_data[0] = torque_times_ten & 0xFF;         // low order torque request byte
-        inverter_cmd_data[1] = (torque_times_ten >> 8) & 0xFF;  // high order torque request byte
-        inverter_cmd_data[5] = 0x01;                            // inverter enabled, torque mode, discharge disabled
-    }
-    else
-    {
-        // not good to go; send 0 torque request
-        inverter_cmd_data[0] = 0;   // low order torque request byte
-        inverter_cmd_data[1] = 0;   // high order torque request byte
-        inverter_cmd_data[5] = 0;   // inverter disabled, torque mode, discharge disabled
-    }
-    
-    CAN_Msg_Send(CAN_ID_INVERTER_HEARTBEAT, CAN_DLC_INVERTER_HEARTBEAT, inverter_cmd_data);
-}
-
-void trigger_100_ms_implausibility()
-{
-    is_100_ms_plausible = false;
+    car_state.pedals_100ms_plausible = false;
     TMR1_Stop();
     
     LED3_SetLow();
     LED2_SetHigh();
 }
 
-// sets the max torque request to a percentage of the overall max torque
-double get_torque_limit()
+// Pedals -------------------------------------------------------------------------------------
+void get_pedal_values()
 {
-    return TORQUE_MAX * car_data.maximum_torque_percent / 100;
+    apps1.value = get_ADC_value(APPS_1);
+    apps2.value = get_ADC_value(APPS_2);
+    brake1.value = get_ADC_value(BRAKE_1);
+    brake2.value = get_ADC_value(BRAKE_2);
 }
 
-void set_regen_torque(uint8_t torque_percent)
+// Pedal States -------------------------------------------------------------------------------
+void set_brake_state()
 {
-    scaled_regen_torque_times_10 = REGEN_TORQUE_MAX * torque_percent / 10; // 10 * x/100 = x/10
+    car_state.braking = brake1.value > brake1.brake_start || brake2.value > brake2.brake_start;
+    
+    // Set Brake Light
+    if(car_state.braking)
+    { 
+        BRK_CTRL_SetHigh();
+    }
+    else
+    {
+        BRK_CTRL_SetLow();
+    }
+}
+
+void set_accelerator_state()
+{
+    car_state.accelerating = apps1.value > apps1.throttle_start || apps2.value > apps2.throttle_start;
+}
+
+// Torque Request -----------------------------------------------------------------------------
+void send_torque_request()
+{
+    check_torque_plausibility();
+
+    if(car_state.torque_plausible)
+    {
+        int16_t torque_x10 = calculate_torque_request();
+        send_command_inverter(true, torque_x10, torque_limit);
+    }
+    else
+    {
+        send_command_inverter(false, 0, 0);
+    }
 }
 
 int16_t calculate_torque_request()
 {
-    if (car_data.apps_1 < APPS1_ACCEL_START)
+    // TODO IMPLEMENT regen speed limit
+    if(apps1.value < apps1.regen_start)
     {
-        if (car_data.regen_enabled) 
-        {
-            return -scaled_regen_torque_times_10;   // if you forget to put the negative here, we're gonna have a bad time.
-        }
-        else
-        {
-            return 0;
-        }
+        // Coasting Regen
+        if(!car_state.regen_enabled) return 0;
+        
+        return regen_limit * 10;
+    }
+    else if(apps1.value < apps1.throttle_start)
+    {
+        // Regen Zone
+        if(!car_state.regen_enabled) return 0;
+        
+        uint16_t apps_regen_range = apps1.throttle_start - apps1.regen_start;
+        uint16_t brake_regen_range = brake1.regen_end - brake1.regen_start;
+        
+        uint16_t regen_throttle_percent = (apps1.throttle_start - apps1.value) / apps_regen_range; 
+        uint16_t regen_brake_percent    = (brake1.value - brake1.regen_start)  / brake_regen_range;
+        uint16_t regen_percent = (regen_throttle_percent * REGEN_COASTING_PERCENT) / 100 + (regen_brake_percent * (100 - REGEN_COASTING_PERCENT)) / 100;
+        
+        return -(regen_percent * regen_limit / 10);
+    }
+    else if(apps1.value < apps1.throttle_end)
+    {   
+        // Throttle Zone
+        uint16_t apps_throttle_range = apps1.throttle_end - apps1.throttle_start;
+        
+        uint16_t throttle_percent = (apps1.value - apps1.throttle_start) / apps_throttle_range;
+        
+        return throttle_percent * torque_limit / 10;
+    }
+    else if(apps1.value < apps1.abs_max)
+    {
+        // Open Throttle Zone
+        return torque_limit * 10;
     }
     
-    if (car_data.apps_1 > APPS1_WIDE_OPEN_THROTTLE)
-    {
-        return get_torque_limit() * 10;
-    }
-    
-    return (((double)car_data.apps_1 - APPS1_ACCEL_START) / (APPS1_WIDE_OPEN_THROTTLE - APPS1_ACCEL_START)) * get_torque_limit() * 10.0;
+    return 0;
 }

@@ -1,9 +1,7 @@
-/* 
- * File:   indicator_driver.h
- * Author: Derek
- *
- * Created on February 24, 2022, 12:24 PM
- */
+// Indicator Driver
+//   Author: Derek Dunn
+//   Created: 22.02.24
+//   Updated: 23.02.16
 
 #ifndef INDICATOR_DRIVER_H
 #define	INDICATOR_DRIVER_H

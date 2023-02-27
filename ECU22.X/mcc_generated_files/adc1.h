@@ -91,7 +91,11 @@
 typedef enum 
 {
     IMD_RESISTANCE,//Channel Name:AN16   Assigned to:Shared Channel
+    APPS_1,//Channel Name:AN26   Assigned to:Shared Channel
+    APPS_2,//Channel Name:AN31   Assigned to:Shared Channel
     LV_BATTERY_VOLTAGE,//Channel Name:AN48   Assigned to:Shared Channel
+    BRAKE_1,//Channel Name:AN55   Assigned to:Shared Channel
+    BRAKE_2,//Channel Name:AN56   Assigned to:Shared Channel
     channel_Internal_Band_Gap_Reference,//Channel Name:Internal Band Gap Reference   Assigned to:Shared Channel
     channel_CTMU,//Channel Name:CTMU   Assigned to:Shared Channel
 } ADC1_CHANNEL;
@@ -339,8 +343,20 @@ inline static void ADC1_ChannelSelect( ADC1_CHANNEL channel )
         case IMD_RESISTANCE:
                 AD1CHS0bits.CH0SA= 0x10;
                 break;
+        case APPS_1:
+                AD1CHS0bits.CH0SA= 0x1A;
+                break;
+        case APPS_2:
+                AD1CHS0bits.CH0SA= 0x1F;
+                break;
         case LV_BATTERY_VOLTAGE:
                 AD1CHS0bits.CH0SA= 0x30;
+                break;
+        case BRAKE_1:
+                AD1CHS0bits.CH0SA= 0x37;
+                break;
+        case BRAKE_2:
+                AD1CHS0bits.CH0SA= 0x38;
                 break;
         case channel_Internal_Band_Gap_Reference:
                 AD1CHS0bits.CH0SA= 0x3D;
@@ -397,7 +413,11 @@ inline static uint16_t ADC1_ConversionResultGet( ADC1_CHANNEL channel )
     switch(channel)
     {
         case IMD_RESISTANCE:
+        case APPS_1:
+        case APPS_2:
         case LV_BATTERY_VOLTAGE:
+        case BRAKE_1:
+        case BRAKE_2:
         case channel_Internal_Band_Gap_Reference:
         case channel_CTMU:
                 result = ADC1BUF0;
@@ -730,16 +750,16 @@ typedef enum
  */
 typedef enum 
 {
-    ADC1_SAMPLING_SOURCE_CTMU  =  0x6,
-    ADC1_SAMPLING_SOURCE_MANUAL  =  0x0,
     ADC1_SAMPLING_SOURCE_PWM3  =  0x2,
-    ADC1_SAMPLING_SOURCE_TMR3  =  0x2,
-    ADC1_SAMPLING_SOURCE_TMR5  =  0x4,
     ADC1_SAMPLING_SOURCE_PWM1  =  0x0,
-    ADC1_SAMPLING_SOURCE_AUTO  =  0x7,
     ADC1_SAMPLING_SOURCE_PWM2  =  0x1,
-    ADC1_SAMPLING_SOURCE_PWM_PRIMARY  =  0x3,
     ADC1_SAMPLING_SOURCE_INT0  =  0x1,
+    ADC1_SAMPLING_SOURCE_MANUAL  =  0x0,
+    ADC1_SAMPLING_SOURCE_PWM_PRIMARY  =  0x3,
+    ADC1_SAMPLING_SOURCE_CTMU  =  0x6,
+    ADC1_SAMPLING_SOURCE_TMR5  =  0x4,
+    ADC1_SAMPLING_SOURCE_AUTO  =  0x7,
+    ADC1_SAMPLING_SOURCE_TMR3  =  0x2,
 } ADC1_SAMPLING_SOURCE;
 
 /** ADC Conversion Channel Type Definition

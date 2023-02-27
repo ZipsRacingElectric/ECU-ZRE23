@@ -34,10 +34,8 @@
       <itemPath>torque_handling.h</itemPath>
       <itemPath>can_driver.h</itemPath>
       <itemPath>macros.h</itemPath>
-      <itemPath>car_data.h</itemPath>
       <itemPath>state_manager.h</itemPath>
       <itemPath>indicator_driver.h</itemPath>
-      <itemPath>on_change_interrupts.h</itemPath>
       <itemPath>ADC_driver.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
@@ -69,10 +67,8 @@
       <itemPath>can_driver.c</itemPath>
       <itemPath>torque_handling.c</itemPath>
       <itemPath>timer_interrupts.c</itemPath>
-      <itemPath>car_data.c</itemPath>
       <itemPath>state_manager.c</itemPath>
       <itemPath>indicator_driver.c</itemPath>
-      <itemPath>on_change_interrupts.c</itemPath>
       <itemPath>ADC_driver.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"

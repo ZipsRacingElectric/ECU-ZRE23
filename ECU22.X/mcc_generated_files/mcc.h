@@ -55,15 +55,15 @@
 
 #include "tmr3.h"
 #include "tmr4.h"
-#include "reset.h"
-#include "dma.h"
 #include "can1.h"
-#include "watchdog.h"
 #include "tmr1.h"
 #include "tmr2.h"
+#include "reset.h"
+#include "adc1.h"
+#include "watchdog.h"
 #include "interrupt_manager.h"
 #include "traps.h"
-#include "adc1.h"
+#include "dma.h"
 
 #warning "This file will be removed in future MCC releases. Use system.h instead."
 
