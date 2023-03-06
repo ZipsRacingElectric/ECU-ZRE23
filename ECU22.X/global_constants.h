@@ -31,5 +31,7 @@
 #define CAN_ID_CALIBRATE_APPS       0x533
 #define CAN_ID_CALIBRATE_BRAKE      0x534
 
+#define CAN_ID_STATUS_ECU           0x703
+
 #endif	/* GLOBAL_CONSTANTS_H */
 

@@ -203,6 +203,33 @@ void send_command_inverter(bool inverter_enabled, int16_t torque_x10, uint16_t t
     send_message(CAN_ID_COMMAND_INVERTER, 8, tx_data);
 }
 
+void send_status_ecu()
+{
+    // Byte 0
+    tx_data[0] = 0;
+    tx_data[0] |= (car_state.ready_to_drive       >> 0);
+    tx_data[0] |= (car_state.high_voltage_enabled >> 1);
+    tx_data[0] |= (car_state.regen_enabled        >> 2);
+    
+    // Byte 1
+    tx_data[1] = 0;
+    tx_data[1] |= (car_state.torque_plausible             >> 0);
+    tx_data[1] |= (car_state.pedals_100ms_plausible       >> 1);
+    tx_data[1] |= (car_state.pedals_plausible             >> 2);
+    tx_data[1] |= (car_state.apps_plausible               >> 3);
+    tx_data[1] |= (car_state.apps_calibration_plausible   >> 4);
+    tx_data[1] |= (car_state.brakes_plausible             >> 5);
+    tx_data[1] |= (car_state.brakes_calibration_plausible >> 6);
+    tx_data[1] |= (car_state.apps_25_5_plausible          >> 7);
+    
+    // Byte 2
+    tx_data[2] = 0;
+    tx_data[2] |= (car_state.accelerating >> 0);
+    tx_data[2] |= (car_state.braking      >> 1);
+    
+    send_message(CAN_ID_STATUS_ECU, 3, tx_data);
+}
+
 void send_pedal_messages()
 {
     // Message 0x005 - APPS & Brakes Input
@@ -226,26 +253,26 @@ void send_pedal_messages()
     
     // Message 0x701 - APPS & Brakes Percentages
     // Using 32-bit representation as to prevent overflow.
-    int16_t apps1_percent  = (100 * ((int32_t)apps1.value  - apps1.real_min ) / (apps1.real_max  - apps1.real_min));
-    int16_t apps2_percent  = (100 * ((int32_t)apps2.value  - apps2.real_min ) / (apps2.real_max  - apps2.real_min));
-    int16_t brake1_percent = (100 * ((int32_t)brake1.value - brake1.real_min) / (brake1.real_max - brake1.real_min));
-    int16_t brake2_percent = (100 * ((int32_t)brake2.value - brake2.real_min) / (brake2.real_max - brake2.real_min));
+    int16_t apps1_percent_x10  = (1000 * ((int32_t)apps1.value  - apps1.real_min ) / (apps1.real_max  - apps1.real_min));
+    int16_t apps2_percent_x10  = (1000 * ((int32_t)apps2.value  - apps2.real_min ) / (apps2.real_max  - apps2.real_min));
+    int16_t brake1_percent_x10 = (1000 * ((int32_t)brake1.value - brake1.real_min) / (brake1.real_max - brake1.real_min));
+    int16_t brake2_percent_x10 = (1000 * ((int32_t)brake2.value - brake2.real_min) / (brake2.real_max - brake2.real_min));
     
     // APPS-1 LO & HI Bytes
-    tx_data[0] =  apps1_percent        & 0xFF;
-    tx_data[1] = (apps1_percent  >> 8) & 0xFF;
+    tx_data[0] =  apps1_percent_x10        & 0xFF;
+    tx_data[1] = (apps1_percent_x10  >> 8) & 0xFF;
     
     // APPS-2 LO & HI Bytes
-    tx_data[2] =  apps2_percent        & 0xFF;
-    tx_data[3] = (apps2_percent  >> 8) & 0xFF;
+    tx_data[2] =  apps2_percent_x10        & 0xFF;
+    tx_data[3] = (apps2_percent_x10  >> 8) & 0xFF;
     
     // Brake-1 LO & HI Bytes
-    tx_data[4] =  brake1_percent       & 0xFF;
-    tx_data[5] = (brake1_percent >> 8) & 0xFF;
+    tx_data[4] =  brake1_percent_x10       & 0xFF;
+    tx_data[5] = (brake1_percent_x10 >> 8) & 0xFF;
     
     // Brake-2 LO & HI Bytes
-    tx_data[6] =  brake2_percent       & 0xFF;
-    tx_data[7] = (brake2_percent >> 8) & 0xFF;
+    tx_data[6] =  brake2_percent_x10       & 0xFF;
+    tx_data[7] = (brake2_percent_x10 >> 8) & 0xFF;
     
     send_message(CAN_ID_DATA_PEDALS, 8, tx_data);
 }
