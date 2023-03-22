@@ -41,27 +41,33 @@ int main(void)
     // Heartbeat Loop
     while(true)
     {
+        LED4_Toggle();
+        
         // Period of 100ms
-        __delay_ms(100);
+        __delay_ms(1);
         ++update_counter;
         
+        send_torque_request();
+        
         // Execute Every 10s
-        if (update_counter == 100)
-        {
-            // Read LV-Battery Voltage
-            car_state.lv_battery_voltage = get_ADC_value(LV_BATTERY_VOLTAGE);
-            
-            // Delay between ADC Readings
-            __delay_us(1);
-            
-            // Read IMD Resistance
-            car_state.imd_resistance = get_ADC_value(IMD_RESISTANCE);
-            
-            update_counter = 0;
-        }
+//        if (update_counter == 100)
+//        {
+//            // Read LV-Battery Voltage
+//            car_state.lv_battery_voltage = get_ADC_value(LV_BATTERY_VOLTAGE);
+//            
+//            // Delay between ADC Readings
+//            __delay_us(1);
+//            
+//            // Read IMD Resistance
+//            car_state.imd_resistance = get_ADC_value(IMD_RESISTANCE);
+//            
+//            update_counter = 0;
+//        }
         
         // Toggle Heartbeat LED
         LED4_Toggle();
+        
+        __delay_ms(1);
     }
     
     // On Exit, Return Error Code 1

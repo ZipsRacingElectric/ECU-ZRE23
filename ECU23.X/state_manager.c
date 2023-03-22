@@ -16,9 +16,9 @@ static void on_pin_change();
 // Global Data --------------------------------------------------------------------------------
 volatile struct state car_state =
 {   
-    .high_voltage_enabled         = false,
-    .ready_to_drive               = false,
-    .regen_enabled                = false,
+    .high_voltage_enabled         = true, // TODO DEFAULT FALSE
+    .ready_to_drive               = true,
+    .regen_enabled                = true, // TODO DEFAULT FALSE
     .torque_plausible             = false,
     .pedals_100ms_plausible       = false,
     .pedals_plausible             = false,
@@ -79,7 +79,8 @@ void set_ready_to_drive()
 
 void exit_ready_to_drive()
 {
-    car_state.ready_to_drive = false;
-    PUMP_CTRL_SetLow();
-    LED4_SetLow();
+    // TODO REINTRODUCE
+//    car_state.ready_to_drive = false;
+//    PUMP_CTRL_SetLow();
+//    LED4_SetLow();
 }

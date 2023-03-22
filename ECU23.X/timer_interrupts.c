@@ -21,7 +21,7 @@ static void interrupt_20ms_service()
     get_pedal_values();
     set_brake_state();
     set_accelerator_state();
-    send_torque_request();
+//    send_torque_request();
     send_pedal_messages();
     send_status_ecu();
     

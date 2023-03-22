@@ -85,6 +85,9 @@ extern volatile struct apps_map  apps2;
 extern volatile struct brake_map brake1;
 extern volatile struct brake_map brake2;
 
+extern volatile uint16_t torque_limit;
+extern volatile uint16_t regen_limit;
+
 #ifdef	__cplusplus
 }
 #endif

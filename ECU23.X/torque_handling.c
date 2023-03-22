@@ -10,6 +10,7 @@
 #include "configuration_variables.h"
 
 // Includes
+#include "traction_control.h"
 #include "can_driver.h"
 #include "state_manager.h"
 #include "ADC_driver.h"
@@ -30,14 +31,16 @@ static void check_pedal_plausibility();
 // - Writes plausibility to car_state
 static void check_apps_25_5_plausibility();
 
-// Calculate Torque Request
-// - Call to get the requested torque
-// - Returns the Torque x10
-int16_t calculate_torque_request();
+// Get Pedal Torque Request
+static int16_t get_pedal_torque_request();
 
 // Global Data --------------------------------------------------------------------------------
-uint16_t torque_limit = 0;
-uint16_t regen_limit  = 0;
+volatile uint16_t torque_limit = 0;
+volatile uint16_t regen_limit  = 0;
+
+// TODO DEVELOP
+volatile uint16_t motor_rpm = 0;
+volatile uint16_t wheel_rpm = 0;
 
 volatile struct apps_map apps1 =
 {
@@ -81,34 +84,64 @@ void set_apps_mapping()
     apps1.value = 0;
     apps2.value = 0;
     car_state.apps_calibration_plausible = false;
+ 
+    // Apply Tolerance to APPS-1 Real Range
+    int32_t apps1_real_min = (int32_t)apps1.real_min - APPS_REAL_RANGE_TOLERANCE * (apps1.real_max - apps1.real_min) / 100;
+    int32_t apps1_real_max = (int32_t)apps1.real_max + APPS_REAL_RANGE_TOLERANCE * (apps1.real_max - apps1.real_min) / 100;
+    
+    if(apps1_real_min < 0)    apps1_real_min = 0;
+    if(apps1_real_max > 1024) apps1_real_max = 1024;
+    
+    if(apps1_real_min < apps1.real_min) apps1.real_min = (uint16_t)apps1_real_min;
+    if(apps1_real_max > apps1.real_max) apps1.real_max = (uint16_t)apps1_real_max;
     
     // Calculate APPS-1 Values from Percentages
     //                  9-bit = (10-bit         - 10-bit        ) / 2-bit
     uint16_t apps1_range_half = (apps1.real_max - apps1.real_min) >> 1;
     
-    //                     9-bit            *  7-bit                       / 6-bit - 10-bit
-    apps1.abs_min        = apps1_range_half * (APPS_ABS_MIN        & 0x7F) / 50    - apps1.real_min;
-    apps1.throttle_start = apps1_range_half * (APPS_THROTTLE_START & 0x7F) / 50    - apps1.real_min;
-    apps1.throttle_end   = apps1_range_half * (APPS_THROTTLE_END   & 0x7F) / 50    - apps1.real_min;
-    apps1.abs_max        = apps1_range_half * (APPS_ABS_MAX        & 0x7F) / 50    - apps1.real_min;
-    //                     (9-bit         * 1-bit) / 5-bit - 10-bit
-    apps1.percent_05     = (apps1_range_half << 1) / 20    - apps1.real_min;
-    apps1.percent_10     = (apps1_range_half << 1) / 10    - apps1.real_min;
-    apps1.percent_25     = (apps1_range_half << 1) / 4     - apps1.real_min;
+    int32_t apps1_abs_min = (int32_t)apps1_range_half * APPS_ABS_MIN     / 50    + apps1.real_min;
+    int32_t apps1_abs_max = (int32_t)apps1_range_half * APPS_ABS_MAX     / 50    + apps1.real_min;
+    
+    if(apps1_abs_min < 0)    apps1_abs_min = 0;
+    if(apps1_abs_max > 1023) apps1_abs_max = 1023;
+    
+    apps1.abs_min        = apps1_abs_min;
+    apps1.throttle_start = (int32_t)apps1_range_half * APPS_THROTTLE_START / 50    + apps1.real_min;
+    apps1.throttle_end   = (int32_t)apps1_range_half * APPS_THROTTLE_END   / 50    + apps1.real_min;
+    apps1.abs_max        = apps1_abs_max;
+    
+    apps1.percent_05     = (int32_t)(apps1_range_half << 1) / 20    + apps1.real_min;
+    apps1.percent_10     = (int32_t)(apps1_range_half << 1) / 10    + apps1.real_min;
+    apps1.percent_25     = (int32_t)(apps1_range_half << 1) / 4     + apps1.real_min;
+    
+    // Apply Tolerance to APPS-2 Real Range
+    int32_t apps2_real_min = (int32_t)apps2.real_min - APPS_REAL_RANGE_TOLERANCE * (apps2.real_max - apps2.real_min) / 100;
+    int32_t apps2_real_max = (int32_t)apps2.real_max + APPS_REAL_RANGE_TOLERANCE * (apps2.real_max - apps2.real_min) / 100;
+    
+    if(apps2_real_min < 0)    apps2_real_min = 0;
+    if(apps2_real_max > 1024) apps2_real_max = 1024;
+    
+    if(apps2_real_min < apps2.real_min) apps2.real_min = (uint16_t)apps2_real_min;
+    if(apps2_real_max > apps2.real_max) apps2.real_max = (uint16_t)apps2_real_max;
     
     // Calculate APPS-2 Values from Percentages
     //                  9-bit = (10-bit         - 10-bit        ) / 2-bit
     uint16_t apps2_range_half = (apps2.real_max - apps2.real_min) >> 1;
     
-    //                     9-bit            *  7-bit                       / 6-bit - 10-bit
-    apps2.abs_min        = apps2_range_half * (APPS_ABS_MIN        & 0x7F) / 50    - apps2.real_min;
-    apps2.throttle_start = apps2_range_half * (APPS_THROTTLE_START & 0x7F) / 50    - apps2.real_min;
-    apps2.throttle_end   = apps2_range_half * (APPS_THROTTLE_END   & 0x7F) / 50    - apps2.real_min;
-    apps2.abs_max        = apps2_range_half * (APPS_ABS_MAX        & 0x7F) / 50    - apps2.real_min;
-    //                     (9-bit         * 1-bit) / 5-bit - 10-bit
-    apps2.percent_05     = (apps2_range_half << 1)  / 20    - apps2.real_min;
-    apps2.percent_10     = (apps2_range_half << 1)  / 10    - apps2.real_min;
-    apps2.percent_25     = (apps2_range_half << 1)  / 4     - apps2.real_min;
+    int32_t apps2_abs_min = (int32_t)apps2_range_half * APPS_ABS_MIN     / 50    + apps2.real_min;
+    int32_t apps2_abs_max = (int32_t)apps2_range_half * APPS_ABS_MAX     / 50    + apps2.real_min;
+    
+    if(apps2_abs_min < 0)    apps2_abs_min = 0;
+    if(apps2_abs_max > 1023) apps2_abs_max = 1023;
+    
+    apps2.abs_min        = apps2_abs_min;
+    apps2.throttle_start = (int32_t)apps2_range_half * APPS_THROTTLE_START / 50    + apps2.real_min;
+    apps2.throttle_end   = (int32_t)apps2_range_half * APPS_THROTTLE_END   / 50    + apps2.real_min;
+    apps2.abs_max        = apps2_abs_max;
+    
+    apps2.percent_05     = (int32_t)(apps2_range_half << 1)  / 20    + apps2.real_min;
+    apps2.percent_10     = (int32_t)(apps2_range_half << 1)  / 10    + apps2.real_min;
+    apps2.percent_25     = (int32_t)(apps2_range_half << 1)  / 4     + apps2.real_min;
     
     // Check Plausibility
     car_state.apps_calibration_plausible = true;
@@ -116,10 +149,10 @@ void set_apps_mapping()
     car_state.apps_calibration_plausible &= apps1.real_min < apps1.real_max;
     car_state.apps_calibration_plausible &= apps2.real_min < apps2.real_max;
     
-    car_state.apps_calibration_plausible &= apps1.abs_min < apps1.real_min;
-    car_state.apps_calibration_plausible &= apps2.abs_min < apps2.real_min;
-    car_state.apps_calibration_plausible &= apps1.abs_max > apps1.real_max;
-    car_state.apps_calibration_plausible &= apps2.abs_max > apps2.real_max;
+    car_state.apps_calibration_plausible &= apps1.abs_min <= apps1.real_min;
+    car_state.apps_calibration_plausible &= apps2.abs_min <= apps2.real_min;
+    car_state.apps_calibration_plausible &= apps1.abs_max >= apps1.real_max;
+    car_state.apps_calibration_plausible &= apps2.abs_max >= apps2.real_max;
 }
 
 void set_brake_mapping()
@@ -129,29 +162,59 @@ void set_brake_mapping()
     brake2.value = 0;
     car_state.brakes_calibration_plausible = false;
     
+    // Apply Tolerance to Brake-1 Real Range
+    int32_t brake1_real_min = (int32_t)brake1.real_min - BRAKE_REAL_RANGE_TOLERANCE * (brake1.real_max - brake1.real_min) / 100;
+    int32_t brake1_real_max = (int32_t)brake1.real_max + BRAKE_REAL_RANGE_TOLERANCE * (brake1.real_max - brake1.real_min) / 100;
+    
+    if(brake1_real_min < 0)    brake1_real_min = 0;
+    if(brake1_real_max > 1024) brake1_real_max = 1024;
+    
+    if(brake1_real_min < brake1.real_min) brake1.real_min = (uint16_t)brake1_real_min;
+    if(brake1_real_max > brake1.real_max) brake1.real_max = (uint16_t)brake1_real_max;
+    
     // Calculate Brake-1 Values from Percentages
     //                   9-bit = (10-bit          - 10-bit         ) / 2-bit
     uint16_t brake1_range_half = (brake1.real_max - brake1.real_min) >> 1;
     
-    //                   9-bit             *  7-bit                      / 6-bit - 10-bit
-    brake1.abs_min     = brake1_range_half * (BRAKES_ABS_MIN     & 0x7F) / 50    - brake1.real_min;
-    brake1.regen_start = brake1_range_half * (BRAKES_REGEN_START & 0x7F) / 50    - brake1.real_min;
-    brake1.brake_start = brake1_range_half * (BRAKES_BRAKE_START & 0x7F) / 50    - brake1.real_min;
-    brake1.regen_end   = brake1_range_half * (BRAKES_REGEN_END   & 0x7F) / 50    - brake1.real_min;
-    brake1.brake_hard  = brake1_range_half * (BRAKES_BRAKE_HARD  & 0x7F) / 50    - brake1.real_min;
-    brake1.abs_max     = brake1_range_half * (BRAKES_ABS_MAX     & 0x7F) / 50    - brake1.real_min;
+    int32_t brake1_abs_min = (int32_t)brake1_range_half * BRAKES_ABS_MIN     / 50    + brake1.real_min;
+    int32_t brake1_abs_max = (int32_t)brake1_range_half * BRAKES_ABS_MAX     / 50    + brake1.real_min;
+    
+    if(brake1_abs_min < 0)    brake1_abs_min = 0;
+    if(brake1_abs_max > 1023) brake1_abs_max = 1023;
+    
+    brake1.abs_min     = brake1_abs_min;
+    brake1.regen_start = (int32_t)brake1_range_half * BRAKES_REGEN_START / 50    + brake1.real_min;
+    brake1.brake_start = (int32_t)brake1_range_half * BRAKES_BRAKE_START / 50    + brake1.real_min;
+    brake1.regen_end   = (int32_t)brake1_range_half * BRAKES_REGEN_END   / 50    + brake1.real_min;
+    brake1.brake_hard  = (int32_t)brake1_range_half * BRAKES_BRAKE_HARD  / 50    + brake1.real_min;
+    brake1.abs_max     = brake1_abs_max;
+    
+    // Apply Tolerance to Brake-2 Real Range
+    int32_t brake2_real_min = (int32_t)brake2.real_min - BRAKE_REAL_RANGE_TOLERANCE * (brake2.real_max - brake1.real_min) / 100;
+    int32_t brake2_real_max = (int32_t)brake2.real_max + BRAKE_REAL_RANGE_TOLERANCE * (brake2.real_max - brake1.real_min) / 100;
+    
+    if(brake2_real_min < 0)    brake2_real_min = 0;
+    if(brake2_real_max > 1024) brake2_real_max = 1024;
+    
+    if(brake2_real_min < brake2.real_min) brake2.real_min = (uint16_t)brake2_real_min;
+    if(brake2_real_max > brake2.real_max) brake2.real_max = (uint16_t)brake2_real_max;
     
     // Calculate Brake-2 Values from Percentages
     //                   9-bit = (10-bit          - 10-bit         ) / 2-bit
     uint16_t brake2_range_half = (brake2.real_max - brake2.real_min) >> 1;
     
-    //                   9-bit             *  7-bit                      / 6-bit - 10-bit
-    brake2.abs_min     = brake2_range_half * (BRAKES_ABS_MIN     & 0x7F) / 50    - brake2.real_min;
-    brake2.regen_start = brake2_range_half * (BRAKES_REGEN_START & 0x7F) / 50    - brake2.real_min;
-    brake2.brake_start = brake2_range_half * (BRAKES_BRAKE_START & 0x7F) / 50    - brake2.real_min;
-    brake2.regen_end   = brake2_range_half * (BRAKES_REGEN_END   & 0x7F) / 50    - brake2.real_min;
-    brake2.brake_hard  = brake2_range_half * (BRAKES_BRAKE_HARD  & 0x7F) / 50    - brake2.real_min;
-    brake2.abs_max     = brake2_range_half * (BRAKES_ABS_MAX     & 0x7F) / 50    - brake2.real_min;
+    int32_t brake2_abs_min = (int32_t)brake2_range_half * BRAKES_ABS_MIN     / 50    + brake2.real_min;
+    int32_t brake2_abs_max = (int32_t)brake2_range_half * BRAKES_ABS_MAX     / 50    + brake2.real_min;
+    
+    if(brake2_abs_min < 0)    brake2_abs_min = 0;
+    if(brake2_abs_max > 1023) brake2_abs_max = 1023;
+    
+    brake2.abs_min     = brake2_abs_min;
+    brake2.regen_start = (int32_t)brake2_range_half * BRAKES_REGEN_START / 50    + brake2.real_min;
+    brake2.brake_start = (int32_t)brake2_range_half * BRAKES_BRAKE_START / 50    + brake2.real_min;
+    brake2.regen_end   = (int32_t)brake2_range_half * BRAKES_REGEN_END   / 50    + brake2.real_min;
+    brake2.brake_hard  = (int32_t)brake2_range_half * BRAKES_BRAKE_HARD  / 50    + brake2.real_min;
+    brake2.abs_max     = brake2_abs_max;
     
     // Check Plausibility
     car_state.brakes_calibration_plausible = true;
@@ -159,10 +222,10 @@ void set_brake_mapping()
     car_state.brakes_calibration_plausible &= brake1.real_min < brake1.real_max;
     car_state.brakes_calibration_plausible &= brake2.real_min < brake2.real_max;
     
-    car_state.brakes_calibration_plausible &= brake1.abs_min < brake1.real_min;
-    car_state.brakes_calibration_plausible &= brake2.abs_min < brake2.real_min;
-    car_state.brakes_calibration_plausible &= brake1.abs_max > brake1.real_max;
-    car_state.brakes_calibration_plausible &= brake2.abs_max > brake2.real_max;
+    car_state.brakes_calibration_plausible &= brake1.abs_min <= brake1.real_min;
+    car_state.brakes_calibration_plausible &= brake2.abs_min <= brake2.real_min;
+    car_state.brakes_calibration_plausible &= brake1.abs_max >= brake1.real_max;
+    car_state.brakes_calibration_plausible &= brake2.abs_max >= brake2.real_max;
 }
 
 // Plausibility Checks ------------------------------------------------------------------------
@@ -299,18 +362,18 @@ void send_torque_request()
 {
     check_torque_plausibility();
 
-    if(car_state.torque_plausible)
-    {
-        int16_t torque_x10 = calculate_torque_request();
-        send_command_inverter(true, torque_x10, torque_limit);
-    }
-    else
+    if(!car_state.torque_plausible)
     {
         send_command_inverter(false, 0, 0);
+        return;
     }
+    
+    int16_t torque_x10 = get_pedal_torque_request() * get_traction_control_byte() >> 8;
+    
+    send_command_inverter(true, torque_x10, torque_limit);
 }
 
-int16_t calculate_torque_request()
+int16_t get_pedal_torque_request()
 {
     // TODO IMPLEMENT regen speed limit
     if(apps1.value < apps1.regen_start)
@@ -318,7 +381,17 @@ int16_t calculate_torque_request()
         // Coasting Regen
         if(!car_state.regen_enabled) return 0;
         
-        return regen_limit * 10;
+        uint16_t brake_regen_range = brake1.regen_end - brake1.regen_start;
+        
+        uint16_t brake_value = brake1.value;
+        if(brake_value < brake1.regen_start) brake_value = brake1.regen_start;
+        if(brake_value > brake1.regen_end)   brake_value = brake1.regen_end;
+        
+        uint16_t regen_brake_percent = 100 * (brake_value - brake1.regen_start) / brake_regen_range;
+        
+        uint16_t regen_percent = REGEN_COASTING_PERCENT + (regen_brake_percent * (100 - REGEN_COASTING_PERCENT)) / 100;
+        
+        return -(regen_percent * regen_limit / 10);
     }
     else if(apps1.value < apps1.throttle_start)
     {
@@ -328,8 +401,12 @@ int16_t calculate_torque_request()
         uint16_t apps_regen_range = apps1.throttle_start - apps1.regen_start;
         uint16_t brake_regen_range = brake1.regen_end - brake1.regen_start;
         
-        uint16_t regen_throttle_percent = (apps1.throttle_start - apps1.value) / apps_regen_range; 
-        uint16_t regen_brake_percent    = (brake1.value - brake1.regen_start)  / brake_regen_range;
+        uint16_t brake_value = brake1.value;
+        if(brake_value < brake1.regen_start) brake_value = brake1.regen_start;
+        if(brake_value > brake1.regen_end)   brake_value = brake1.regen_end;
+        
+        uint16_t regen_throttle_percent = 100 * (apps1.throttle_start - apps1.value) / apps_regen_range; 
+        uint16_t regen_brake_percent    = 100 * (brake_value - brake1.regen_start)   / brake_regen_range;
         uint16_t regen_percent = (regen_throttle_percent * REGEN_COASTING_PERCENT) / 100 + (regen_brake_percent * (100 - REGEN_COASTING_PERCENT)) / 100;
         
         return -(regen_percent * regen_limit / 10);
@@ -339,7 +416,7 @@ int16_t calculate_torque_request()
         // Throttle Zone
         uint16_t apps_throttle_range = apps1.throttle_end - apps1.throttle_start;
         
-        uint16_t throttle_percent = (apps1.value - apps1.throttle_start) / apps_throttle_range;
+        uint16_t throttle_percent = 100 * (apps1.value - apps1.throttle_start) / apps_throttle_range;
         
         return throttle_percent * torque_limit / 10;
     }

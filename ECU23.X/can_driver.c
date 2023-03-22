@@ -22,6 +22,8 @@ static void handle_calibrate_apps_range(uint8_t* message_data);
 
 static void handle_calibrate_brake_range(uint8_t* message_data);
 
+static void handle_command_drive_configuration(uint8_t* message_data);
+
 // Message Transmitting
 static void send_message(uint16_t id, CAN_DLC dlc, uint8_t *tx_data);
 
@@ -75,6 +77,8 @@ void handle_message(void)
             case CAN_ID_CALIBRATE_BRAKE:
                 handle_calibrate_brake_range(rx_message.data);
                 return;
+            case CAN_ID_COMMAND_DRIVE_CONFIGURATION:
+                handle_command_drive_configuration(rx_message.data);
         }
     }
 }
@@ -130,6 +134,12 @@ void handle_calibrate_brake_range(uint8_t* message_data)
     set_brake_mapping();
 }
 
+static void handle_command_drive_configuration(uint8_t* message_data)
+{
+    torque_limit = ((message_data[1] << 8) | message_data[0]) / 10;
+    regen_limit  = ((message_data[3] << 8) | message_data[2]) / 10;
+}
+
 // Message Transmitters -----------------------------------------------------------------------
 void send_message(uint16_t id, CAN_DLC dlc, uint8_t *tx_data)
 {
@@ -145,7 +155,7 @@ void send_message(uint16_t id, CAN_DLC dlc, uint8_t *tx_data)
     CAN1_Transmit(CAN_PRIORITY_MEDIUM, &tx_message);
 }
 
-void send_command_inverter(bool inverter_enabled, int16_t torque_x10, uint16_t torque_limit_x10)
+void send_command_inverter(bool inverter_enabled, int16_t torque_x10, uint16_t torque_limit)
 {
     if(inverter_enabled)
     {
@@ -170,8 +180,8 @@ void send_command_inverter(bool inverter_enabled, int16_t torque_x10, uint16_t t
         tx_data[5] |= (false >> 2);
         
         // Torque Limit LO and HI Bytes
-        tx_data[6] =  torque_limit_x10       & 0xFF;
-        tx_data[7] = (torque_limit_x10 >> 8) & 0xFF;
+        tx_data[6] = ( torque_limit * 10)       & 0xFF;
+        tx_data[7] = ((torque_limit * 10) >> 8) & 0xFF;
     }
     else
     {
@@ -207,27 +217,33 @@ void send_status_ecu()
 {
     // Byte 0
     tx_data[0] = 0;
-    tx_data[0] |= (car_state.ready_to_drive       >> 0);
-    tx_data[0] |= (car_state.high_voltage_enabled >> 1);
-    tx_data[0] |= (car_state.regen_enabled        >> 2);
+    tx_data[0] |= (car_state.ready_to_drive       << 0);
+    tx_data[0] |= (car_state.high_voltage_enabled << 1);
+    tx_data[0] |= (car_state.regen_enabled        << 2);
     
     // Byte 1
     tx_data[1] = 0;
-    tx_data[1] |= (car_state.torque_plausible             >> 0);
-    tx_data[1] |= (car_state.pedals_100ms_plausible       >> 1);
-    tx_data[1] |= (car_state.pedals_plausible             >> 2);
-    tx_data[1] |= (car_state.apps_plausible               >> 3);
-    tx_data[1] |= (car_state.apps_calibration_plausible   >> 4);
-    tx_data[1] |= (car_state.brakes_plausible             >> 5);
-    tx_data[1] |= (car_state.brakes_calibration_plausible >> 6);
-    tx_data[1] |= (car_state.apps_25_5_plausible          >> 7);
+    tx_data[1] |= (car_state.torque_plausible             << 0);
+    tx_data[1] |= (car_state.pedals_100ms_plausible       << 1);
+    tx_data[1] |= (car_state.pedals_plausible             << 2);
+    tx_data[1] |= (car_state.apps_plausible               << 3);
+    tx_data[1] |= (car_state.apps_calibration_plausible   << 4);
+    tx_data[1] |= (car_state.brakes_plausible             << 5);
+    tx_data[1] |= (car_state.brakes_calibration_plausible << 6);
+    tx_data[1] |= (car_state.apps_25_5_plausible          << 7);
     
     // Byte 2
     tx_data[2] = 0;
-    tx_data[2] |= (car_state.accelerating >> 0);
-    tx_data[2] |= (car_state.braking      >> 1);
+    tx_data[2] |= (car_state.accelerating << 0);
+    tx_data[2] |= (car_state.braking      << 1);
     
-    send_message(CAN_ID_STATUS_ECU, 3, tx_data);
+    tx_data[3] = 0;
+    tx_data[4] = 0;
+    tx_data[5] = 0;
+    tx_data[6] = 0;
+    tx_data[7] = 0;
+    
+    send_message(CAN_ID_STATUS_ECU, 8, tx_data);
 }
 
 void send_pedal_messages()

@@ -37,6 +37,7 @@
       <itemPath>state_manager.h</itemPath>
       <itemPath>indicator_driver.h</itemPath>
       <itemPath>ADC_driver.h</itemPath>
+      <itemPath>traction_control.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -70,6 +71,7 @@
       <itemPath>state_manager.c</itemPath>
       <itemPath>indicator_driver.c</itemPath>
       <itemPath>ADC_driver.c</itemPath>
+      <itemPath>traction_control.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
