@@ -13,7 +13,7 @@
 #include "traction_control.h"
 #include "can_driver.h"
 #include "state_manager.h"
-#include "ADC_driver.h"
+#include "adc_driver.h"
 
 // Functions ----------------------------------------------------------------------------------
 // Check Torque Plausibility

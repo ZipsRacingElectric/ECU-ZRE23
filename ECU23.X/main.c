@@ -13,13 +13,12 @@
 #include "mcc_generated_files/pin_manager.h"
 #include "mcc_generated_files/tmr1.h"
 
-#include "ADC_driver.h"
-
 // Includes
 #include "timer_interrupts.h"
 #include "can_driver.h"
 #include "torque_handling.h"
 #include "state_manager.h"
+#include "adc_driver.h"
 
 int main(void)
 {

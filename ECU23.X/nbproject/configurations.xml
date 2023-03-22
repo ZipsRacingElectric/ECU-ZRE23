@@ -36,8 +36,8 @@
       <itemPath>macros.h</itemPath>
       <itemPath>state_manager.h</itemPath>
       <itemPath>indicator_driver.h</itemPath>
-      <itemPath>ADC_driver.h</itemPath>
       <itemPath>traction_control.h</itemPath>
+      <itemPath>adc_driver.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -70,8 +70,8 @@
       <itemPath>timer_interrupts.c</itemPath>
       <itemPath>state_manager.c</itemPath>
       <itemPath>indicator_driver.c</itemPath>
-      <itemPath>ADC_driver.c</itemPath>
       <itemPath>traction_control.c</itemPath>
+      <itemPath>adc_driver.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

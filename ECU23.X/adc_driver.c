@@ -1,5 +1,5 @@
 // Header
-#include "ADC_driver.h"
+#include "adc_driver.h"
 
 // Constants
 #include "global_constants.h"
