@@ -44,9 +44,7 @@ int main(void)
         
         // Period of 100ms
         __delay_ms(1);
-        ++update_counter;
-        
-        send_torque_request();
+//        ++update_counter;
         
         // Execute Every 10s
 //        if (update_counter == 100)

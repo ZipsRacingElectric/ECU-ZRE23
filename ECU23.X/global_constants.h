@@ -27,6 +27,8 @@
 
 #define CAN_ID_COMMAND_DRIVE_CONFIGURATION 0x010                          // ID of Command Torque Limits
 
+#define CAN_ID_COMMAND_DRIVE_START         0x004
+
 #define CAN_ID_INPUT_PEDALS                0x005                          // ID of Pedals Raw Message
 #define CAN_ID_DATA_PEDALS                 0x701                          // ID of Pedals Percent Message
 

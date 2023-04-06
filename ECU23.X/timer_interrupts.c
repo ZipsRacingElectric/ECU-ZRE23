@@ -21,15 +21,9 @@ static void interrupt_20ms_service()
     get_pedal_values();
     set_brake_state();
     set_accelerator_state();
-//    send_torque_request();
+    send_torque_request();
     send_pedal_messages();
     send_status_ecu();
-    
-    // Execute every 100ms
-    if(update_20ms_counter % 5 == 0)
-    {
-        // TODO OPTIMIZE messages
-    }
     
     // Increment Counter. Prevent Overflow 
     if(update_20ms_counter == 10000) update_20ms_counter = 0;

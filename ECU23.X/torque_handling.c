@@ -10,10 +10,10 @@
 #include "configuration_variables.h"
 
 // Includes
-#include "traction_control.h"
 #include "can_driver.h"
 #include "state_manager.h"
 #include "adc_driver.h"
+#include "pid.h"
 
 // Functions ----------------------------------------------------------------------------------
 // Check Torque Plausibility
@@ -34,13 +34,20 @@ static void check_apps_25_5_plausibility();
 // Get Pedal Torque Request
 static int16_t get_pedal_torque_request();
 
+// // Get Traction Control Byte
+//static uint16_t get_traction_control_byte();
+
 // Global Data --------------------------------------------------------------------------------
 volatile uint16_t torque_limit = 0;
 volatile uint16_t regen_limit  = 0;
 
-// TODO DEVELOP
-volatile uint16_t motor_rpm = 0;
-volatile uint16_t wheel_rpm = 0;
+volatile uint16_t rpm_front_left;
+volatile uint16_t rpm_front_right;
+volatile uint16_t rpm_rear_left;
+volatile uint16_t rpm_rear_right;
+
+float traction_control_integral = 0;
+float traction_control_prime = 0;
 
 volatile struct apps_map apps1 =
 {
@@ -368,7 +375,7 @@ void send_torque_request()
         return;
     }
     
-    int16_t torque_x10 = get_pedal_torque_request() * get_traction_control_byte() >> 8;
+    int16_t torque_x10 = get_pedal_torque_request(); // * get_traction_control_byte() >> 8;
     
     send_command_inverter(true, torque_x10, torque_limit);
 }
@@ -428,3 +435,20 @@ int16_t get_pedal_torque_request()
     
     return 0;
 }
+
+//// Get Traction Byte
+//uint16_t get_traction_control_byte()
+//{
+//    uint16_t rpm_front = (rpm_front_left + rpm_front_right) >> 1;
+//    uint16_t rpm_rear  = (rpm_rear_left  + rpm_rear_right)  >> 1;
+//    
+//    float slip_ratio_difference = 0.05 - (1 - rpm_front / rpm_rear);
+//    
+//    float kp = 1;
+//    float ki = 1;
+//    float kd = 1;
+//    
+//    float time_step = 20 / 1000;
+//    
+//    return 255 * pid(&slip_ratio_difference, kp, ki, kd, time_step, &traction_control_prime, &traction_control_integral);
+//}

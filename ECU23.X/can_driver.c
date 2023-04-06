@@ -24,6 +24,8 @@ static void handle_calibrate_brake_range(uint8_t* message_data);
 
 static void handle_command_drive_configuration(uint8_t* message_data);
 
+static void handle_command_drive_start(uint8_t* message_data);
+
 // Message Transmitting
 static void send_message(uint16_t id, CAN_DLC dlc, uint8_t *tx_data);
 
@@ -79,7 +81,19 @@ void handle_message(void)
                 return;
             case CAN_ID_COMMAND_DRIVE_CONFIGURATION:
                 handle_command_drive_configuration(rx_message.data);
+                return;
+            case CAN_ID_COMMAND_DRIVE_START:
+                handle_command_drive_start(rx_message.data);
+                return;
         }
+    }
+}
+
+void handle_command_drive_start(uint8_t* message_data)
+{
+    if((message_data[0] & 0b1) != 0b1)
+    {
+        set_ready_to_drive();
     }
 }
 
