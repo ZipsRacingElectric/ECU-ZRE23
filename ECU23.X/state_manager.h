@@ -24,6 +24,8 @@ void set_ready_to_drive();
 
 void exit_ready_to_drive();
 
+void get_start_button_state();
+
 // Global Data --------------------------------------------------------------------------------
 struct state
 {
