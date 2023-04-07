@@ -109,20 +109,20 @@
 #include "system.h"
 #include "system_types.h"
 #include "dma.h"
-#include "interrupt_manager.h"
-#include "traps.h"
 #include "can1.h"
 #include "tmr4.h"
-#include "tmr2.h"
 #include "tmr3.h"
+#include "tmr2.h"
 #include "tmr1.h"
+#include "interrupt_manager.h"
+#include "traps.h"
 #include "adc1.h"
 
 void SYSTEM_Initialize(void)
 {
     PIN_MANAGER_Initialize();
-    INTERRUPT_Initialize();
     CLOCK_Initialize();
+    INTERRUPT_Initialize();
     ADC1_Initialize();
     TMR3_Initialize();
     TMR4_Initialize();

@@ -14,29 +14,49 @@
 #include "torque_handling.h"
 
 // Functions ----------------------------------------------------------------------------------
+// Handle Message
+// - Call to handle to the incoming CAN Message
+// - Reads the received CAN Message and calls the appropriate handler
 static void handle_message(void);
 
+// Handle Inverter Fault Message
+// - Call to handle the Inverter Fault Message
+// - Writes to the car_state.inverter_fault_present
 static void handle_inverter_fault_message(uint8_t* message_data);
 
+// Handle Calibrate APPS Range Message
+// - Call to handle the Calibrate APPS Range Message
+// - Writes to and sets the APPS Map
 static void handle_calibrate_apps_range(uint8_t* message_data);
 
+// Handle Calibrate Brake Range Message
+// - Call to handle the Calibrate Brake Range Message
+// - Writes to and sets the Brake Map
 static void handle_calibrate_brake_range(uint8_t* message_data);
 
+// Handle Command Drive Configuration
+// - Call to handle the Command Drive Configurate Message
+// - Writes appropriate values to the Torque Handling globals
 static void handle_command_drive_configuration(uint8_t* message_data);
 
+// Handle Command Drive Start
+// - Call to handle the Command Drive Start Message
+// - Calls the Set Ready to Drive function
 static void handle_command_drive_start(uint8_t* message_data);
 
-// Message Transmitting
+// Send Message
+// - Call to send a CAN Message
+// - Sends the requested CAN Message when possible
+// * NOTE: The CAN Message ID must be present in the MCC CAN ID filter.
 static void send_message(uint16_t id, CAN_DLC dlc, uint8_t *tx_data);
 
-// Message Objects
-static CAN_MSG_OBJ rx_message;
-static CAN_MSG_OBJ tx_message;
+// Objects ------------------------------------------------------------------------------------
+static CAN_MSG_OBJ rx_message;                 // CAN Receive Object
+static uint8_t rx_data[8] = {0,0,0,0,0,0,0,0}; // CAN Receive Object Data Buffer
 
-static CAN_MSG_FIELD tx_field;
-
-static uint8_t rx_data[8] = {0,0,0,0,0,0,0,0};
-static uint8_t tx_data[8] = {0,0,0,0,0,0,0,0};
+static CAN_MSG_OBJ tx_message;                 // CAN Transmit Object
+static uint8_t tx_data[8] = {0,0,0,0,0,0,0,0}; // CAN Transmit Object Data Buffer
+static CAN_MSG_FIELD tx_field;                 // CAN Transmit Object Field
 
 // Initialization -----------------------------------------------------------------------------
 void initialize_CAN_driver(void)
@@ -53,7 +73,7 @@ void initialize_CAN_driver(void)
     CAN1_ReceiveEnable();
     CAN1_OperationModeSet(CAN_NORMAL_OPERATION_MODE);
     
-    // Set Handler
+    // Set Rx Handler
     CAN1_SetRxBufferInterruptHandler(&handle_message);
     
     // Enable CAN 1
@@ -91,9 +111,14 @@ void handle_message(void)
 
 void handle_command_drive_start(uint8_t* message_data)
 {
-    if((message_data[0] & 0b1) != 0b1)
+    // Byte 0
+    if((message_data[0] & 0b1) == 0b1)
     {
         set_ready_to_drive();
+    }
+    else
+    {
+        exit_ready_to_drive();
     }
 }
 

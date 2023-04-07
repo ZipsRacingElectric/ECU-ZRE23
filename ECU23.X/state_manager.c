@@ -9,6 +9,7 @@
 #include "state_manager.h"
 #include "torque_handling.h"
 #include "indicator_driver.h"
+#include "adc_driver.h"
 
 // Prototypes ---------------------------------------------------------------------------------
 static void on_pin_change();
@@ -82,4 +83,14 @@ void exit_ready_to_drive()
     car_state.ready_to_drive = false;
     PUMP_CTRL_SetLow();
     LED4_SetLow();
+}
+
+void get_start_button_state()
+{
+    // Ignore if Ready to Drive
+    if(car_state.ready_to_drive) return;
+    
+    // Get Button Input
+    bool button_pressed = (get_ADC_value(BUTTON_START) < 512); // Active LOW
+    if(button_pressed) set_ready_to_drive();
 }

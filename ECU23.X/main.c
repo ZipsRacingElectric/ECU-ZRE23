@@ -8,7 +8,6 @@
 
 // Libraries
 #include <libpic30.h>
-
 #include "mcc_generated_files/system.h"
 #include "mcc_generated_files/pin_manager.h"
 #include "mcc_generated_files/tmr1.h"
@@ -16,9 +15,9 @@
 // Includes
 #include "timer_interrupts.h"
 #include "can_driver.h"
-#include "torque_handling.h"
 #include "state_manager.h"
 #include "adc_driver.h"
+#include "torque_handling.h"
 
 int main(void)
 {
@@ -35,36 +34,23 @@ int main(void)
     // Allow Tractive Systems to Engage
     HV_CTRL_SetHigh();
  
-    static uint16_t update_counter = 99;
- 
     // Heartbeat Loop
     while(true)
     {
-        LED4_Toggle();
-        
-        // Period of 100ms
+        // Period of 1ms
         __delay_ms(1);
-//        ++update_counter;
         
-        // Execute Every 10s
-//        if (update_counter == 100)
-//        {
-//            // Read LV-Battery Voltage
-//            car_state.lv_battery_voltage = get_ADC_value(LV_BATTERY_VOLTAGE);
+//        // Read LV-Battery Voltage
+//        car_state.lv_battery_voltage = get_ADC_value(LV_BATTERY_VOLTAGE);
 //            
-//            // Delay between ADC Readings
-//            __delay_us(1);
+//        // Delay between ADC Readings
+//        __delay_us(1);
 //            
-//            // Read IMD Resistance
-//            car_state.imd_resistance = get_ADC_value(IMD_RESISTANCE);
-//            
-//            update_counter = 0;
-//        }
-        
+//        // Read IMD Resistance
+//        car_state.imd_resistance = get_ADC_value(IMD_RESISTANCE);
+            
         // Toggle Heartbeat LED
         LED4_Toggle();
-        
-        __delay_ms(1);
     }
     
     // On Exit, Return Error Code 1

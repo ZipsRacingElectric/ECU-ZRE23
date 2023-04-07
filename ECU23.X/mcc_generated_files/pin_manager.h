@@ -348,6 +348,152 @@
 #define BRAKE_2_SetDigitalOutput() (_TRISA10 = 0)
 /**
   @Summary
+    Sets the GPIO pin, RA12, high using LATA12.
+
+  @Description
+    Sets the GPIO pin, RA12, high using LATA12.
+
+  @Preconditions
+    The RA12 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RA12 high (1)
+    BUTTON_START_SetHigh();
+    </code>
+
+*/
+#define BUTTON_START_SetHigh()          (_LATA12 = 1)
+/**
+  @Summary
+    Sets the GPIO pin, RA12, low using LATA12.
+
+  @Description
+    Sets the GPIO pin, RA12, low using LATA12.
+
+  @Preconditions
+    The RA12 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RA12 low (0)
+    BUTTON_START_SetLow();
+    </code>
+
+*/
+#define BUTTON_START_SetLow()           (_LATA12 = 0)
+/**
+  @Summary
+    Toggles the GPIO pin, RA12, using LATA12.
+
+  @Description
+    Toggles the GPIO pin, RA12, using LATA12.
+
+  @Preconditions
+    The RA12 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Toggle RA12
+    BUTTON_START_Toggle();
+    </code>
+
+*/
+#define BUTTON_START_Toggle()           (_LATA12 ^= 1)
+/**
+  @Summary
+    Reads the value of the GPIO pin, RA12.
+
+  @Description
+    Reads the value of the GPIO pin, RA12.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    uint16_t portValue;
+
+    // Read RA12
+    postValue = BUTTON_START_GetValue();
+    </code>
+
+*/
+#define BUTTON_START_GetValue()         _RA12
+/**
+  @Summary
+    Configures the GPIO pin, RA12, as an input.
+
+  @Description
+    Configures the GPIO pin, RA12, as an input.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RA12 as an input
+    BUTTON_START_SetDigitalInput();
+    </code>
+
+*/
+#define BUTTON_START_SetDigitalInput()  (_TRISA12 = 1)
+/**
+  @Summary
+    Configures the GPIO pin, RA12, as an output.
+
+  @Description
+    Configures the GPIO pin, RA12, as an output.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RA12 as an output
+    BUTTON_START_SetDigitalOutput();
+    </code>
+
+*/
+#define BUTTON_START_SetDigitalOutput() (_TRISA12 = 0)
+/**
+  @Summary
     Sets the GPIO pin, RA4, high using LATA4.
 
   @Description

@@ -90,6 +90,7 @@
  */
 typedef enum 
 {
+    BUTTON_START,//Channel Name:AN10   Assigned to:Shared Channel
     IMD_RESISTANCE,//Channel Name:AN16   Assigned to:Shared Channel
     APPS_1,//Channel Name:AN26   Assigned to:Shared Channel
     APPS_2,//Channel Name:AN31   Assigned to:Shared Channel
@@ -340,6 +341,9 @@ inline static void ADC1_ChannelSelect( ADC1_CHANNEL channel )
 {
     switch(channel)
     {
+        case BUTTON_START:
+                AD1CHS0bits.CH0SA= 0xA;
+                break;
         case IMD_RESISTANCE:
                 AD1CHS0bits.CH0SA= 0x10;
                 break;
@@ -412,6 +416,7 @@ inline static uint16_t ADC1_ConversionResultGet( ADC1_CHANNEL channel )
 
     switch(channel)
     {
+        case BUTTON_START:
         case IMD_RESISTANCE:
         case APPS_1:
         case APPS_2:
@@ -750,16 +755,16 @@ typedef enum
  */
 typedef enum 
 {
-    ADC1_SAMPLING_SOURCE_TMR5  =  0x4,
-    ADC1_SAMPLING_SOURCE_PWM1  =  0x0,
-    ADC1_SAMPLING_SOURCE_INT0  =  0x1,
     ADC1_SAMPLING_SOURCE_PWM_PRIMARY  =  0x3,
-    ADC1_SAMPLING_SOURCE_PWM2  =  0x1,
-    ADC1_SAMPLING_SOURCE_PWM3  =  0x2,
-    ADC1_SAMPLING_SOURCE_TMR3  =  0x2,
-    ADC1_SAMPLING_SOURCE_AUTO  =  0x7,
     ADC1_SAMPLING_SOURCE_CTMU  =  0x6,
     ADC1_SAMPLING_SOURCE_MANUAL  =  0x0,
+    ADC1_SAMPLING_SOURCE_PWM3  =  0x2,
+    ADC1_SAMPLING_SOURCE_PWM1  =  0x0,
+    ADC1_SAMPLING_SOURCE_INT0  =  0x1,
+    ADC1_SAMPLING_SOURCE_TMR5  =  0x4,
+    ADC1_SAMPLING_SOURCE_PWM2  =  0x1,
+    ADC1_SAMPLING_SOURCE_TMR3  =  0x2,
+    ADC1_SAMPLING_SOURCE_AUTO  =  0x7,
 } ADC1_SAMPLING_SOURCE;
 
 /** ADC Conversion Channel Type Definition

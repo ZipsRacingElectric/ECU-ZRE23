@@ -18,10 +18,17 @@ static uint16_t update_20ms_counter = 0;
 static void interrupt_20ms_service()
 {
     // Executes every 20ms
+    
+    // ADC
+    get_start_button_state();
+    
+    // Torque Handling
     get_pedal_values();
     set_brake_state();
     set_accelerator_state();
     send_torque_request();
+    
+    // CAN Messages
     send_pedal_messages();
     send_status_ecu();
     

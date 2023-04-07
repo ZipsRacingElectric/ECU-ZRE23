@@ -17,7 +17,7 @@
 
 // Functions ----------------------------------------------------------------------------------
 // Check Torque Plausibility
-// - Call to check the plausibility of the Torque message
+// - Call to check the plausibility of the Torque request
 // - Writes plausibility to car_state
 static void check_torque_plausibility();
 
@@ -27,24 +27,18 @@ static void check_torque_plausibility();
 static void check_pedal_plausibility();
 
 // Check APPS 25/5 Plausibility
-// - Call to check the plausibility of the APPS based on the 25/5 Rule
+// - Call to check the plausibility of the APPS value based on the 25/5 Rule
 // - Writes plausibility to car_state
 static void check_apps_25_5_plausibility();
 
 // Get Pedal Torque Request
+// - Call to get the Torque value requested by the Pedal inputs.
+// - Returns the requested Torque multiplied by 10
 static int16_t get_pedal_torque_request();
-
-// // Get Traction Control Byte
-//static uint16_t get_traction_control_byte();
 
 // Global Data --------------------------------------------------------------------------------
 volatile uint16_t torque_limit = 0;
 volatile uint16_t regen_limit  = 0;
-
-volatile uint16_t rpm_front_left;
-volatile uint16_t rpm_front_right;
-volatile uint16_t rpm_rear_left;
-volatile uint16_t rpm_rear_right;
 
 float traction_control_integral = 0;
 float traction_control_prime = 0;
@@ -87,7 +81,7 @@ void initialize_torque_handler()
 // Pedal Mapping ------------------------------------------------------------------------------
 void set_apps_mapping()
 {
-    // Invalidate Current Values.
+    // Invalidate Current Values
     apps1.value = 0;
     apps2.value = 0;
     car_state.apps_calibration_plausible = false;
@@ -164,7 +158,7 @@ void set_apps_mapping()
 
 void set_brake_mapping()
 {
-    // Invalidate Current Values.
+    // Invalidate Current Values
     brake1.value = 0;
     brake2.value = 0;
     car_state.brakes_calibration_plausible = false;
@@ -375,7 +369,7 @@ void send_torque_request()
         return;
     }
     
-    int16_t torque_x10 = get_pedal_torque_request(); // * get_traction_control_byte() >> 8;
+    int16_t torque_x10 = get_pedal_torque_request();
     
     send_command_inverter(true, torque_x10, torque_limit);
 }
