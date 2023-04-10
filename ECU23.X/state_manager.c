@@ -85,12 +85,12 @@ void exit_ready_to_drive()
     LED4_SetLow();
 }
 
-void get_start_button_state()  //This function starts the car 
+void get_start_button_state()
 {
     // Ignore if Ready to Drive
     if(car_state.ready_to_drive) return; 
     
     // Get Button Input
-    bool button_pressed = (get_ADC_value(BUTTON_START) < 512); // Active LOW
+    bool button_pressed = (get_ADC_value(BUTTON_START) < 512); // Active Low signal
     if(button_pressed) set_ready_to_drive();  
 }

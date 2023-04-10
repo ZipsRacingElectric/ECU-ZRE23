@@ -108,15 +108,15 @@
 #include "clock.h"
 #include "system.h"
 #include "system_types.h"
-#include "dma.h"
 #include "can1.h"
-#include "tmr4.h"
-#include "tmr3.h"
-#include "tmr2.h"
-#include "tmr1.h"
+#include "dma.h"
 #include "interrupt_manager.h"
 #include "traps.h"
+#include "tmr2.h"
 #include "adc1.h"
+#include "tmr1.h"
+#include "tmr4.h"
+#include "tmr3.h"
 
 void SYSTEM_Initialize(void)
 {

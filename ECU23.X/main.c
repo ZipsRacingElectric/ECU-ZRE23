@@ -26,10 +26,10 @@ int main(void)
     
     // Initializations
     initialize_CAN_driver();
-    initialize_timer_interrupts();
-    initialize_state_manager();
     initialize_ADC();
+    initialize_state_manager();
     initialize_torque_handler();
+    initialize_timer_interrupts();
 
     // Allow Tractive Systems to Engage
     HV_CTRL_SetHigh();
@@ -40,6 +40,7 @@ int main(void)
         // Period of 1ms
         __delay_ms(1);
         
+        // TODO: Reimplement
 //        // Read LV-Battery Voltage
 //        car_state.lv_battery_voltage = get_ADC_value(LV_BATTERY_VOLTAGE);
 //            

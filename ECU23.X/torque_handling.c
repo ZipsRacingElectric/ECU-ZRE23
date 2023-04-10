@@ -37,11 +37,8 @@ static void check_apps_25_5_plausibility();
 static int16_t get_pedal_torque_request();
 
 // Global Data --------------------------------------------------------------------------------
-volatile uint16_t torque_limit = 0;
-volatile uint16_t regen_limit  = 0;
-
-float traction_control_integral = 0;
-float traction_control_prime = 0;
+volatile uint16_t torque_limit = 230;
+volatile uint16_t regen_limit  = 23;
 
 volatile struct apps_map apps1 =
 {

@@ -18,12 +18,24 @@ extern "C" {
 #include "global_constants.h"
 
 // Functions ----------------------------------------------------------------------------------
+// Initialize State Manager
+// - Call to initialize the State Manager
+// - Sets pin interrupts
 void initialize_state_manager();
 
+// Set Ready to Drive
+// - Call to enter the Ready to Drive State
+// - Will write to car_state if Ready to Drive Plausible
 void set_ready_to_drive();
 
+// Exit Ready to Drive
+// - Call to exit the Ready to Drive State
+// - Will write to car_state and disable the HV Control
 void exit_ready_to_drive();
 
+// Get Start Button State
+// - Call to Check the State of the Start Button
+// - Will call Set Ready to Drive if the Start Button is Pressed
 void get_start_button_state();
 
 // Global Data --------------------------------------------------------------------------------

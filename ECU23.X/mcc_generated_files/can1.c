@@ -253,7 +253,7 @@ void CAN1_Initialize(void)
     
     /* Configure the masks */
     C1RXM0SIDbits.SID = 0x7ff; 
-    C1RXM1SIDbits.SID = 0x2d8; 
+    C1RXM1SIDbits.SID = 0x2c8; 
     C1RXM2SIDbits.SID = 0x7ff; 
     
     C1RXM0SIDbits.EID = 0x0; 

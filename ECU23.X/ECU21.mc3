@@ -2856,7 +2856,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="ECAN1" name="message ID"/>
-         <value>16</value>
+         <value>4</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="ECAN1" name="receive buffer mode"/>
@@ -5275,6 +5275,26 @@
          <value>Receive Buffer RB14</value>
       </entry>
       <entry>
+         <key class="com.microchip.mcc.core.tokenManager.PropertyTokenKey" moduleName="ECAN1" name="data%5%canFilter"/>
+         <value>Filter 3</value>
+      </entry>
+      <entry>
+         <key class="com.microchip.mcc.core.tokenManager.PropertyTokenKey" moduleName="ECAN1" name="data%5%canID"/>
+         <value>0x4</value>
+      </entry>
+      <entry>
+         <key class="com.microchip.mcc.core.tokenManager.PropertyTokenKey" moduleName="ECAN1" name="data%5%canIdType"/>
+         <value>SID</value>
+      </entry>
+      <entry>
+         <key class="com.microchip.mcc.core.tokenManager.PropertyTokenKey" moduleName="ECAN1" name="data%5%canMask"/>
+         <value>Mask 1</value>
+      </entry>
+      <entry>
+         <key class="com.microchip.mcc.core.tokenManager.PropertyTokenKey" moduleName="ECAN1" name="data%5%canReceiveBuffer"/>
+         <value>Receive Buffer RB14</value>
+      </entry>
+      <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="ECAN1" registerAlias="CBUFPNT1"/>
          <value>59913</value>
       </entry>
@@ -5484,7 +5504,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="ECAN1" registerAlias="CRXM1SID"/>
-         <value>23296</value>
+         <value>22784</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="ECAN1" registerAlias="CRXM2EID"/>
@@ -6320,7 +6340,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="ECAN1" registerAlias="CRXM1SID" settingAlias="SID"/>
-         <value>728</value>
+         <value>712</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="ECAN1" registerAlias="CRXM2EID" settingAlias="EID"/>
@@ -15985,12 +16005,12 @@
          <hash>0e807482a537e69fa2b380df16dc5cd7c06c17593c3b56d19c730965f590d26a</hash>
       </entry>
       <entry>
-         <file>mcc_generated_files\dma.h</file>
-         <hash>eefdd4934ea950385d0262ecb6091da3b85b2d134fdfdaa99c3c45bf03088004</hash>
-      </entry>
-      <entry>
          <file>mcc_generated_files\can1.h</file>
          <hash>043269caf375f8aa4ac2aa4ac534b740ad82d931f1a1edfad777fcc5ab6ecd91</hash>
+      </entry>
+      <entry>
+         <file>mcc_generated_files\dma.h</file>
+         <hash>eefdd4934ea950385d0262ecb6091da3b85b2d134fdfdaa99c3c45bf03088004</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\adc_module_features.h</file>
@@ -16010,7 +16030,7 @@
       </entry>
       <entry>
          <file>mcc_generated_files\system.c</file>
-         <hash>dc8c05abe473a16fd064882f4b097dd0804e06c4d27af11c5d3d4788d43738e8</hash>
+         <hash>93429acdb1eb1d0cd486c6fccf4f8bcbc4d8de7e10311d2bd01ecffc5645a674</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\clock.h</file>
@@ -16026,7 +16046,7 @@
       </entry>
       <entry>
          <file>mcc_generated_files\mcc.h</file>
-         <hash>136bb2ed42029aec8960fd5b7f60f11c05632a16c257f8ed8f1db7bbd24aaf6a</hash>
+         <hash>d97f318ffb6cce9a3eb61f67b6824399eeee5b5deff884df117dcfc3f44487cb</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\tmr4.h</file>
@@ -16045,32 +16065,32 @@
          <hash>c80d1aa89fcd9382575e012d6373b4d5f89c2a8c3fceb9e7494d34d795c4e397</hash>
       </entry>
       <entry>
-         <file>mcc_generated_files\can_types.h</file>
-         <hash>7005e946152c25b306403f9c23352b7a66b703e925ec11dc95e5310faea95a89</hash>
-      </entry>
-      <entry>
-         <file>mcc_generated_files\tmr3.h</file>
-         <hash>c0d2f3d20d0ad7dd832ae8a4cb1ee2c7522e338f66f2be80eff7e8b3a60c04ea</hash>
-      </entry>
-      <entry>
          <file>main.c</file>
          <hash>2ee611dfcd0cb6c7b3dbd061f6a5effe02d12a0a9d5dd623de8807f3fd3b11b0</hash>
+      </entry>
+      <entry>
+         <file>mcc_generated_files\can_types.h</file>
+         <hash>7005e946152c25b306403f9c23352b7a66b703e925ec11dc95e5310faea95a89</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\adc1.c</file>
          <hash>fc574484c061184939023db9ba7b2375696dabcc9b1c0f44470ee82274f81d10</hash>
       </entry>
       <entry>
+         <file>mcc_generated_files\tmr3.h</file>
+         <hash>c0d2f3d20d0ad7dd832ae8a4cb1ee2c7522e338f66f2be80eff7e8b3a60c04ea</hash>
+      </entry>
+      <entry>
          <file>mcc_generated_files\tmr2.h</file>
          <hash>21226aafbad5a87bc59f747230986ce064bb68ef32d9299d361b52e2b8fa38d6</hash>
       </entry>
       <entry>
-         <file>mcc_generated_files\tmr2.c</file>
-         <hash>6ca01619f645d17aa9a96770f1ee4d86e1bf2f190ef50002b9edfacb2e8d5a9e</hash>
-      </entry>
-      <entry>
          <file>mcc_generated_files\pin_manager.h</file>
          <hash>3a3ecf46a57cd8916bd189e8cd6825e6f817643c43d35c007561f61e5ebdf185</hash>
+      </entry>
+      <entry>
+         <file>mcc_generated_files\tmr2.c</file>
+         <hash>6ca01619f645d17aa9a96770f1ee4d86e1bf2f190ef50002b9edfacb2e8d5a9e</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\tmr1.c</file>
@@ -16090,7 +16110,7 @@
       </entry>
       <entry>
          <file>mcc_generated_files\can1.c</file>
-         <hash>75ae864485a4cc4ca6223f56127c8dccaa8991bb94bf65d5515979d36242dfc9</hash>
+         <hash>1282d8e535612f0493273243ba4ffa83b9828ca1952b30a375ef991f619d821e</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\traps.c</file>
@@ -16102,7 +16122,7 @@
       </entry>
       <entry>
          <file>mcc_generated_files\adc1.h</file>
-         <hash>f0174eebd4823e9f0c3b46627675f3ca0d5d61925b6e69f7eb57c65c56b4d54a</hash>
+         <hash>663606ef5c1fd080058381237a1bd2abb04adf3e47b3e500d0f493f3100fdfd1</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\interrupt_manager.c</file>

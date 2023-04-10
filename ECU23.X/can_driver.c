@@ -175,8 +175,12 @@ void handle_calibrate_brake_range(uint8_t* message_data)
 
 static void handle_command_drive_configuration(uint8_t* message_data)
 {
+    // Bytes 0 & 1
     torque_limit = ((message_data[1] << 8) | message_data[0]) / 10;
+    // Bytes 2 & 3
     regen_limit  = ((message_data[3] << 8) | message_data[2]) / 10;
+    // Byte 4
+    car_state.regen_enabled = (bool)(message_data[4] & 0b1);
 }
 
 // Message Transmitters -----------------------------------------------------------------------
