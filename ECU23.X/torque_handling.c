@@ -88,7 +88,7 @@ void set_apps_mapping()
     int32_t apps1_real_max = (int32_t)apps1.real_max + APPS_REAL_RANGE_TOLERANCE * (apps1.real_max - apps1.real_min) / 100;
     
     if(apps1_real_min < 0)    apps1_real_min = 0;
-    if(apps1_real_max > 1024) apps1_real_max = 1024;
+    if(apps1_real_max > 1023) apps1_real_max = 1023;
     
     if(apps1_real_min < apps1.real_min) apps1.real_min = (uint16_t)apps1_real_min;
     if(apps1_real_max > apps1.real_max) apps1.real_max = (uint16_t)apps1_real_max;
@@ -117,7 +117,7 @@ void set_apps_mapping()
     int32_t apps2_real_max = (int32_t)apps2.real_max + APPS_REAL_RANGE_TOLERANCE * (apps2.real_max - apps2.real_min) / 100;
     
     if(apps2_real_min < 0)    apps2_real_min = 0;
-    if(apps2_real_max > 1024) apps2_real_max = 1024;
+    if(apps2_real_max > 1023) apps2_real_max = 1023;
     
     if(apps2_real_min < apps2.real_min) apps2.real_min = (uint16_t)apps2_real_min;
     if(apps2_real_max > apps2.real_max) apps2.real_max = (uint16_t)apps2_real_max;
@@ -165,7 +165,7 @@ void set_brake_mapping()
     int32_t brake1_real_max = (int32_t)brake1.real_max + BRAKE_REAL_RANGE_TOLERANCE * (brake1.real_max - brake1.real_min) / 100;
     
     if(brake1_real_min < 0)    brake1_real_min = 0;
-    if(brake1_real_max > 1024) brake1_real_max = 1024;
+    if(brake1_real_max > 1023) brake1_real_max = 1023;
     
     if(brake1_real_min < brake1.real_min) brake1.real_min = (uint16_t)brake1_real_min;
     if(brake1_real_max > brake1.real_max) brake1.real_max = (uint16_t)brake1_real_max;
@@ -192,7 +192,7 @@ void set_brake_mapping()
     int32_t brake2_real_max = (int32_t)brake2.real_max + BRAKE_REAL_RANGE_TOLERANCE * (brake2.real_max - brake1.real_min) / 100;
     
     if(brake2_real_min < 0)    brake2_real_min = 0;
-    if(brake2_real_max > 1024) brake2_real_max = 1024;
+    if(brake2_real_max > 1023) brake2_real_max = 1023;
     
     if(brake2_real_min < brake2.real_min) brake2.real_min = (uint16_t)brake2_real_min;
     if(brake2_real_max > brake2.real_max) brake2.real_max = (uint16_t)brake2_real_max;

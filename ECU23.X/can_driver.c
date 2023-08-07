@@ -277,11 +277,13 @@ void send_status_ecu()
     
     // Byte 2
     tx_data[2] = 0;
-    tx_data[2] |= (car_state.accelerating << 0);
-    tx_data[2] |= (car_state.braking      << 1);
+    tx_data[2] |= (car_state.accelerating       << 0);
+    tx_data[2] |= (car_state.braking            << 1);
+    tx_data[2] |= (car_state.imd_fault_present  << 2);
+    tx_data[2] |= (car_state.bspd_fault_present << 3);
     
     tx_data[3] = 0;
-    tx_data[4] = 0;
+    tx_data[4] = car_state.imd_resistance;
     tx_data[5] = 0;
     tx_data[6] = 0;
     tx_data[7] = 0;

@@ -40,12 +40,10 @@ int main(void)
         // Period of 1ms
         __delay_ms(1);
         
-        // TODO: Reimplement
-//        // Read LV-Battery Voltage
+        check_state();
+        
+          // Read LV-Battery Voltage
 //        car_state.lv_battery_voltage = get_ADC_value(LV_BATTERY_VOLTAGE);
-//            
-//        // Delay between ADC Readings
-//        __delay_us(1);
 //            
 //        // Read IMD Resistance
 //        car_state.imd_resistance = get_ADC_value(IMD_RESISTANCE);

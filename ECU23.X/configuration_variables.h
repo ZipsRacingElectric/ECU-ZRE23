@@ -16,7 +16,7 @@
 
 #define BRAKES_ABS_MIN                  -10         // Brake Absolute Minimum Percentage
 #define BRAKES_REGEN_START              0           // Brake Regen Start Percentage
-#define BRAKES_BRAKE_START              10          // Brake Brake Light Start Percentage
+#define BRAKES_BRAKE_START              15          // Brake Brake Light Start Percentage
 #define BRAKES_REGEN_END                25          // Brake Regen End Percentage
 #define BRAKES_BRAKE_HARD               50          // Brake Hard Braking Percentage
 #define BRAKES_ABS_MAX                  110         // Brake Absolute Maximum Percentage
@@ -34,9 +34,9 @@
 #define APPS2_DEFAULT_REAL_MIN          95          // Default APPS-2 Real Min
 #define APPS2_DEFAULT_REAL_MAX          737         // Default APPS-2 Real Max
 #define BRAKE1_DEFAULT_REAL_MIN         123         // Default Brake-1 Real Min
-#define BRAKE1_DEFAULT_REAL_MAX         161         // Default Brake-1 Real Max
+#define BRAKE1_DEFAULT_REAL_MAX         171         // Default Brake-1 Real Max
 #define BRAKE2_DEFAULT_REAL_MIN         120         // Default Brake-2 Real Min
-#define BRAKE2_DEFAULT_REAL_MAX         162         // Default Brake-2 Real Max
+#define BRAKE2_DEFAULT_REAL_MAX         169         // Default Brake-2 Real Max
 
 #define LOW_LV_VAL 609  //12 V on the battery is divided down to 2.976 V, ADC produces ~609
 

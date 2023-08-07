@@ -33,10 +33,10 @@ void set_ready_to_drive();
 // - Will write to car_state and disable the HV Control
 void exit_ready_to_drive();
 
-// Get Start Button State
-// - Call to Check the State of the Start Button
-// - Will call Set Ready to Drive if the Start Button is Pressed
-void get_start_button_state();
+// Check State
+// - Call to Read from the Analog and Digital inputs
+// - Writes the determined state to car_state and calls any detected interrupts
+void check_state();
 
 // Global Data --------------------------------------------------------------------------------
 struct state
@@ -54,6 +54,8 @@ struct state
     bool brakes_calibration_plausible;
     bool apps_25_5_plausible;
     bool inverter_fault_present;
+    bool bspd_fault_present;
+    bool imd_fault_present;
     
     bool accelerating;
     bool braking;

@@ -56,6 +56,152 @@
 */
 /**
   @Summary
+    Sets the GPIO pin, RA0, high using LATA0.
+
+  @Description
+    Sets the GPIO pin, RA0, high using LATA0.
+
+  @Preconditions
+    The RA0 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RA0 high (1)
+    IMD_FAULT_SetHigh();
+    </code>
+
+*/
+#define IMD_FAULT_SetHigh()          (_LATA0 = 1)
+/**
+  @Summary
+    Sets the GPIO pin, RA0, low using LATA0.
+
+  @Description
+    Sets the GPIO pin, RA0, low using LATA0.
+
+  @Preconditions
+    The RA0 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RA0 low (0)
+    IMD_FAULT_SetLow();
+    </code>
+
+*/
+#define IMD_FAULT_SetLow()           (_LATA0 = 0)
+/**
+  @Summary
+    Toggles the GPIO pin, RA0, using LATA0.
+
+  @Description
+    Toggles the GPIO pin, RA0, using LATA0.
+
+  @Preconditions
+    The RA0 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Toggle RA0
+    IMD_FAULT_Toggle();
+    </code>
+
+*/
+#define IMD_FAULT_Toggle()           (_LATA0 ^= 1)
+/**
+  @Summary
+    Reads the value of the GPIO pin, RA0.
+
+  @Description
+    Reads the value of the GPIO pin, RA0.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    uint16_t portValue;
+
+    // Read RA0
+    postValue = IMD_FAULT_GetValue();
+    </code>
+
+*/
+#define IMD_FAULT_GetValue()         _RA0
+/**
+  @Summary
+    Configures the GPIO pin, RA0, as an input.
+
+  @Description
+    Configures the GPIO pin, RA0, as an input.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RA0 as an input
+    IMD_FAULT_SetDigitalInput();
+    </code>
+
+*/
+#define IMD_FAULT_SetDigitalInput()  (_TRISA0 = 1)
+/**
+  @Summary
+    Configures the GPIO pin, RA0, as an output.
+
+  @Description
+    Configures the GPIO pin, RA0, as an output.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RA0 as an output
+    IMD_FAULT_SetDigitalOutput();
+    </code>
+
+*/
+#define IMD_FAULT_SetDigitalOutput() (_TRISA0 = 0)
+/**
+  @Summary
     Sets the GPIO pin, RA1, high using LATA1.
 
   @Description
@@ -2684,6 +2830,152 @@
 #define LED4_SetDigitalOutput() (_TRISC9 = 0)
 /**
   @Summary
+    Sets the GPIO pin, RG7, high using LATG7.
+
+  @Description
+    Sets the GPIO pin, RG7, high using LATG7.
+
+  @Preconditions
+    The RG7 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RG7 high (1)
+    BSPD_FAULT_SetHigh();
+    </code>
+
+*/
+#define BSPD_FAULT_SetHigh()          (_LATG7 = 1)
+/**
+  @Summary
+    Sets the GPIO pin, RG7, low using LATG7.
+
+  @Description
+    Sets the GPIO pin, RG7, low using LATG7.
+
+  @Preconditions
+    The RG7 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RG7 low (0)
+    BSPD_FAULT_SetLow();
+    </code>
+
+*/
+#define BSPD_FAULT_SetLow()           (_LATG7 = 0)
+/**
+  @Summary
+    Toggles the GPIO pin, RG7, using LATG7.
+
+  @Description
+    Toggles the GPIO pin, RG7, using LATG7.
+
+  @Preconditions
+    The RG7 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Toggle RG7
+    BSPD_FAULT_Toggle();
+    </code>
+
+*/
+#define BSPD_FAULT_Toggle()           (_LATG7 ^= 1)
+/**
+  @Summary
+    Reads the value of the GPIO pin, RG7.
+
+  @Description
+    Reads the value of the GPIO pin, RG7.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    uint16_t portValue;
+
+    // Read RG7
+    postValue = BSPD_FAULT_GetValue();
+    </code>
+
+*/
+#define BSPD_FAULT_GetValue()         _RG7
+/**
+  @Summary
+    Configures the GPIO pin, RG7, as an input.
+
+  @Description
+    Configures the GPIO pin, RG7, as an input.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RG7 as an input
+    BSPD_FAULT_SetDigitalInput();
+    </code>
+
+*/
+#define BSPD_FAULT_SetDigitalInput()  (_TRISG7 = 1)
+/**
+  @Summary
+    Configures the GPIO pin, RG7, as an output.
+
+  @Description
+    Configures the GPIO pin, RG7, as an output.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RG7 as an output
+    BSPD_FAULT_SetDigitalOutput();
+    </code>
+
+*/
+#define BSPD_FAULT_SetDigitalOutput() (_TRISG7 = 0)
+/**
+  @Summary
     Sets the GPIO pin, RG9, high using LATG9.
 
   @Description
@@ -2701,11 +2993,11 @@
   @Example
     <code>
     // Set RG9 high (1)
-    IMD_RESISTANCE_SetHigh();
+    IMD_PWM_DATA_SetHigh();
     </code>
 
 */
-#define IMD_RESISTANCE_SetHigh()          (_LATG9 = 1)
+#define IMD_PWM_DATA_SetHigh()          (_LATG9 = 1)
 /**
   @Summary
     Sets the GPIO pin, RG9, low using LATG9.
@@ -2725,11 +3017,11 @@
   @Example
     <code>
     // Set RG9 low (0)
-    IMD_RESISTANCE_SetLow();
+    IMD_PWM_DATA_SetLow();
     </code>
 
 */
-#define IMD_RESISTANCE_SetLow()           (_LATG9 = 0)
+#define IMD_PWM_DATA_SetLow()           (_LATG9 = 0)
 /**
   @Summary
     Toggles the GPIO pin, RG9, using LATG9.
@@ -2749,11 +3041,11 @@
   @Example
     <code>
     // Toggle RG9
-    IMD_RESISTANCE_Toggle();
+    IMD_PWM_DATA_Toggle();
     </code>
 
 */
-#define IMD_RESISTANCE_Toggle()           (_LATG9 ^= 1)
+#define IMD_PWM_DATA_Toggle()           (_LATG9 ^= 1)
 /**
   @Summary
     Reads the value of the GPIO pin, RG9.
@@ -2775,11 +3067,11 @@
     uint16_t portValue;
 
     // Read RG9
-    postValue = IMD_RESISTANCE_GetValue();
+    postValue = IMD_PWM_DATA_GetValue();
     </code>
 
 */
-#define IMD_RESISTANCE_GetValue()         _RG9
+#define IMD_PWM_DATA_GetValue()         _RG9
 /**
   @Summary
     Configures the GPIO pin, RG9, as an input.
@@ -2799,11 +3091,11 @@
   @Example
     <code>
     // Sets the RG9 as an input
-    IMD_RESISTANCE_SetDigitalInput();
+    IMD_PWM_DATA_SetDigitalInput();
     </code>
 
 */
-#define IMD_RESISTANCE_SetDigitalInput()  (_TRISG9 = 1)
+#define IMD_PWM_DATA_SetDigitalInput()  (_TRISG9 = 1)
 /**
   @Summary
     Configures the GPIO pin, RG9, as an output.
@@ -2823,11 +3115,11 @@
   @Example
     <code>
     // Sets the RG9 as an output
-    IMD_RESISTANCE_SetDigitalOutput();
+    IMD_PWM_DATA_SetDigitalOutput();
     </code>
 
 */
-#define IMD_RESISTANCE_SetDigitalOutput() (_TRISG9 = 0)
+#define IMD_PWM_DATA_SetDigitalOutput() (_TRISG9 = 0)
 
 /**
     Section: Function Prototypes
