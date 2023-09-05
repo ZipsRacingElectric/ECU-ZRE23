@@ -65,6 +65,7 @@ struct apps_map
 {
     // Sensor Value
     uint16_t value;
+    int16_t  percent_x10;
     // Mapping
     uint16_t abs_min;
     uint16_t real_min;
@@ -86,6 +87,7 @@ struct brake_map
 {
     // Sensor Value
     uint16_t value;
+    uint16_t percent_x10;
     // Mapping
     uint16_t abs_min;
     uint16_t real_min;

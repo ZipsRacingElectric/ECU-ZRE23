@@ -26,17 +26,17 @@
 #define REGEN_TORQUE_MAX                230         // Maximum Requestable Regen Torque
 #define REGEN_COASTING_PERCENT          10          // Percent of Regen applied when Coasting
 
-#define APPS_REAL_RANGE_TOLERANCE       5           // Percent of Tolerance in APPS Pedal Range
-#define BRAKE_REAL_RANGE_TOLERANCE      5           // Percent of Tolerance in Brake Pedal Range
+#define APPS_REAL_RANGE_TOLERANCE       4           // Percent of Tolerance in APPS Pedal Range
+#define BRAKE_REAL_RANGE_TOLERANCE      4           // Percent of Tolerance in Brake Pedal Range
 
-#define APPS1_DEFAULT_REAL_MIN          104         // Default APPS-1 Real Min
-#define APPS1_DEFAULT_REAL_MAX          751         // Default APPS-1 Real Max
-#define APPS2_DEFAULT_REAL_MIN          95          // Default APPS-2 Real Min
-#define APPS2_DEFAULT_REAL_MAX          737         // Default APPS-2 Real Max
-#define BRAKE1_DEFAULT_REAL_MIN         123         // Default Brake-1 Real Min
-#define BRAKE1_DEFAULT_REAL_MAX         171         // Default Brake-1 Real Max
+#define APPS1_DEFAULT_REAL_MIN          40          // Default APPS-1 Real Min
+#define APPS1_DEFAULT_REAL_MAX          475         // Default APPS-1 Real Max
+#define APPS2_DEFAULT_REAL_MIN          90          // Default APPS-2 Real Min
+#define APPS2_DEFAULT_REAL_MAX          780         // Default APPS-2 Real Max
+#define BRAKE1_DEFAULT_REAL_MIN         120         // Default Brake-1 Real Min
+#define BRAKE1_DEFAULT_REAL_MAX         400         // Default Brake-1 Real Max
 #define BRAKE2_DEFAULT_REAL_MIN         120         // Default Brake-2 Real Min
-#define BRAKE2_DEFAULT_REAL_MAX         169         // Default Brake-2 Real Max
+#define BRAKE2_DEFAULT_REAL_MAX         400         // Default Brake-2 Real Max
 
 #define LOW_LV_VAL 609  //12 V on the battery is divided down to 2.976 V, ADC produces ~609
 

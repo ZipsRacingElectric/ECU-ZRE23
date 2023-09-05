@@ -211,7 +211,7 @@ void send_command_inverter(bool inverter_enabled, int16_t torque_x10, uint16_t t
         tx_data[3] = 0;
         
         // Inverter Direction Bit (0 => Forward, 1 => Reverse)
-        tx_data[4] = 0;
+        tx_data[4] = 1;
         
         // Byte 5
         tx_data[5] = 0;
@@ -237,7 +237,7 @@ void send_command_inverter(bool inverter_enabled, int16_t torque_x10, uint16_t t
         tx_data[3] = 0;
         
         // Inverter Direction Bit (0 => Forward, 1 => Reverse)
-        tx_data[4] = 0;
+        tx_data[4] = 1;
         
         // Byte 5
         tx_data[5] = 0;
@@ -313,27 +313,21 @@ void send_pedal_messages()
     send_message(CAN_ID_INPUT_PEDALS, 8, tx_data);
     
     // Message 0x701 - APPS & Brakes Percentages
-    // Using 32-bit representation as to prevent overflow.
-    int16_t apps1_percent_x10  = (1000 * ((int32_t)apps1.value  - apps1.real_min ) / (apps1.real_max  - apps1.real_min));
-    int16_t apps2_percent_x10  = (1000 * ((int32_t)apps2.value  - apps2.real_min ) / (apps2.real_max  - apps2.real_min));
-    int16_t brake1_percent_x10 = (1000 * ((int32_t)brake1.value - brake1.real_min) / (brake1.real_max - brake1.real_min));
-    int16_t brake2_percent_x10 = (1000 * ((int32_t)brake2.value - brake2.real_min) / (brake2.real_max - brake2.real_min));
-    
     // APPS-1 LO & HI Bytes
-    tx_data[0] =  apps1_percent_x10        & 0xFF;
-    tx_data[1] = (apps1_percent_x10  >> 8) & 0xFF;
+    tx_data[0] =  apps1.percent_x10        & 0xFF;
+    tx_data[1] = (apps1.percent_x10  >> 8) & 0xFF;
     
     // APPS-2 LO & HI Bytes
-    tx_data[2] =  apps2_percent_x10        & 0xFF;
-    tx_data[3] = (apps2_percent_x10  >> 8) & 0xFF;
+    tx_data[2] =  apps2.percent_x10        & 0xFF;
+    tx_data[3] = (apps2.percent_x10  >> 8) & 0xFF;
     
     // Brake-1 LO & HI Bytes
-    tx_data[4] =  brake1_percent_x10       & 0xFF;
-    tx_data[5] = (brake1_percent_x10 >> 8) & 0xFF;
+    tx_data[4] =  brake1.percent_x10       & 0xFF;
+    tx_data[5] = (brake1.percent_x10 >> 8) & 0xFF;
     
     // Brake-2 LO & HI Bytes
-    tx_data[6] =  brake2_percent_x10       & 0xFF;
-    tx_data[7] = (brake2_percent_x10 >> 8) & 0xFF;
+    tx_data[6] =  brake2.percent_x10       & 0xFF;
+    tx_data[7] = (brake2.percent_x10 >> 8) & 0xFF;
     
     send_message(CAN_ID_DATA_PEDALS, 8, tx_data);
 }

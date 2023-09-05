@@ -37,12 +37,13 @@ static void check_apps_25_5_plausibility();
 static int16_t get_pedal_torque_request();
 
 // Global Data --------------------------------------------------------------------------------
-volatile uint16_t torque_limit = 230;
-volatile uint16_t regen_limit  = 23;
+volatile uint16_t torque_limit = 23;
+volatile uint16_t regen_limit  = 0;
 
 volatile struct apps_map apps1 =
 {
     .value          = 0,
+    .percent_x10    = 0,
     .real_min       = APPS1_DEFAULT_REAL_MIN,
     .real_max       = APPS1_DEFAULT_REAL_MAX
 };
@@ -50,6 +51,7 @@ volatile struct apps_map apps1 =
 volatile struct apps_map apps2 =
 {
     .value          = 0,
+    .percent_x10    = 0,
     .real_min       = APPS2_DEFAULT_REAL_MIN,
     .real_max       = APPS2_DEFAULT_REAL_MAX
 };
@@ -57,6 +59,7 @@ volatile struct apps_map apps2 =
 volatile struct brake_map brake1 =
 {
     .value       = 0,
+    .percent_x10 = 0,
     .real_min    = BRAKE1_DEFAULT_REAL_MIN,
     .real_max    = BRAKE1_DEFAULT_REAL_MAX
 };
@@ -64,6 +67,7 @@ volatile struct brake_map brake1 =
 volatile struct brake_map brake2 =
 {
     .value       = 0,
+    .percent_x10 = 0,
     .real_min    = BRAKE2_DEFAULT_REAL_MIN,
     .real_max    = BRAKE2_DEFAULT_REAL_MAX
 };
@@ -81,6 +85,8 @@ void set_apps_mapping()
     // Invalidate Current Values
     apps1.value = 0;
     apps2.value = 0;
+    apps1.percent_x10 = 0;
+    apps2.percent_x10 = 0;
     car_state.apps_calibration_plausible = false;
  
     // Apply Tolerance to APPS-1 Real Range
@@ -257,8 +263,8 @@ void check_pedal_plausibility()
     car_state.apps_plausible &= apps2.value > apps2.abs_min;
     
     // Check APPS-2 is within 10% of APPS-1
-    car_state.apps_plausible &= apps2.value < apps1.value + (apps1.percent_10 - apps1.real_min);
-    car_state.apps_plausible &= apps2.value > apps1.value - (apps1.percent_10 - apps1.real_min);
+    car_state.apps_plausible &= apps2.percent_x10 - apps1.percent_x10 < 100;
+    car_state.apps_plausible &= apps1.percent_x10 - apps2.percent_x10 < 100;
 
     // Check Brake-1 is in range
     car_state.brakes_plausible &= brake1.value < brake1.abs_max;
@@ -332,6 +338,12 @@ void get_pedal_values()
     apps2.value = get_ADC_value(APPS_2);
     brake1.value = get_ADC_value(BRAKE_1);
     brake2.value = get_ADC_value(BRAKE_2);
+    
+    // Using 32-bit representation as to prevent overflow.
+    apps1.percent_x10  = (1000 * ((int32_t)apps1.value  - apps1.real_min ) / (apps1.real_max  - apps1.real_min));
+    apps2.percent_x10  = (1000 * ((int32_t)apps2.value  - apps2.real_min ) / (apps2.real_max  - apps2.real_min));
+    brake1.percent_x10 = (1000 * ((int32_t)brake1.value - brake1.real_min) / (brake1.real_max - brake1.real_min));
+    brake2.percent_x10 = (1000 * ((int32_t)brake2.value - brake2.real_min) / (brake2.real_max - brake2.real_min));
 }
 
 // Pedal States -------------------------------------------------------------------------------
