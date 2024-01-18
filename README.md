@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ![ZRE Logo](./images/Logo_with_zippy_subtext_white.png "Zips Racing Electric Logo")
 # Table of Contents
 
